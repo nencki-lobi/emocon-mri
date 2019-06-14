@@ -1,0 +1,5 @@
+numpy==1.16.4
+pandas==0.24.2
+pybids==0.9.1
+pydicom==1.2.2
+gnureadline>=6.3.8
