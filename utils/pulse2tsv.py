@@ -3,6 +3,7 @@ import os
 import json
 import numpy as np
 import pydicom
+from bids import BIDSLayout
 from itertools import islice
 
 
@@ -106,9 +107,13 @@ def save_pulse(data, info, layout, subject, task):
         'suffix': 'physio',
         'extension': 'json',
         })
-    np.savetxt(tsv_file, data, fmt='%g')
-    with open(json_file, 'w') as jfile:
+
+    np.savetxt(os.path.join(layout.root, tsv_file), data, fmt='%g')
+    print('Written', tsv_file)
+
+    with open(os.path.join(layout.root, json_file), 'w') as jfile:
         json.dump(info, jfile, indent=3)
+        print('Written', json_file)
 
 
 def get_dicom_files(dicom_root, code, task, return_last=False):
@@ -119,14 +124,19 @@ def get_dicom_files(dicom_root, code, task, return_last=False):
     if len(task_folders) == 1:
         task_folder = task_folders[0]
     else:
-        raise RuntimeError('Found more occurrences of task {}'.format(task))
+        raise RuntimeError(
+            'Found {} occurrences of task {}'.format(len(task_folders), task)
+            )
 
     files = sorted(os.listdir(task_folder))
 
     if return_last:
-        return(files[0], files[-1])
+        first = os.path.join(task_folder, files[0])
+        last = os.path.join(task_folder, files[-1])
+        return first, last
     else:
-        return(files[0])
+        first = os.path.join(task_folder, files[0])
+        return first
 
 
 def get_pulse_files(pulse_root, code):
@@ -137,6 +147,35 @@ def get_pulse_files(pulse_root, code):
     if os.path.isfile(ofl) and os.path.isfile(de):
         return ofl, de
     elif os.path.isfile(both):
-        return both
+        return (both,)
     else:
         raise RuntimeError('Can not find pulse for subject {}', code)
+
+
+def capitalise(s):
+    return s[0].upper() + s[1:].lower()
+
+
+DICOM_DIR = '/Volumes/MyBookPro/emocon_mri/dicom'
+PULSE_DIR = '/Volumes/MyBookPro/emocon_mri/pulse'
+BIDS_ROOT = '/Volumes/MyBookPro/emocon_mri/emocon'
+
+code = 'BQHLDK'
+
+pulse_f = get_pulse_files(PULSE_DIR, code)
+layout = BIDSLayout(BIDS_ROOT, validate=False)
+
+if len(pulse_f) == 2:
+    for i, task_name in enumerate(['ofl', 'de']):
+        pulse_file = pulse_f[i]
+        dicom_file = get_dicom_files(DICOM_DIR, code, task_name)
+        pdata, info = create_for_one(dicom_file, pulse_file)
+        save_pulse(pdata, info, layout, capitalise(code), task_name)
+else:
+    first_ofl, last_ofl = get_dicom_files(DICOM_DIR, code, 'ofl', True)
+    first_de = get_dicom_files(DICOM_DIR, code, 'de', False)
+    pdata_ofl, info_ofl, pdata_de, info_de = create_for_two(
+        first_ofl, last_ofl, first_de, pulse_f[0]
+        )
+    save_pulse(pdata_ofl, info_ofl, layout, capitalise(code), 'ofl')
+    save_pulse(pdata_de, info_de, layout, capitalise(code), 'de')
