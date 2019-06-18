@@ -1,42 +1,150 @@
+import glob
+import os
 import pandas
+import re
+from bids import BIDSLayout
 
-fpat = '/Volumes/MyBookPro/video-ofl/example_logfiles/{}-procedure OFL.log'
-code = 'FRAMWY'
 
-df = pandas.read_csv(fpat.format(code), sep='\t', skiprows=3)
+def read_logfile(log_fname, subtract_pulse=True):
 
-rename_dict = {
-    'Event Type': 'EventType',
-    'Time': 'onset',
-    'Duration': 'duration',
-    'Code': 'trial_type',
-    }
+    rename_dict = {
+        'Event Type': 'EventType',
+        'Time': 'onset',
+        'Duration': 'duration',
+        'Code': 'trial_type',
+        }
 
-df.rename(columns=rename_dict, inplace=True)
+    df = pandas.read_csv(log_fname, sep='\t', skiprows=3)
+    df.rename(columns=rename_dict, inplace=True)
 
-# Find first pulse
-first_pulse = df.query('EventType == "Pulse"').iloc[0].onset
+    # Find first pulse
+    first_pulse = df.query('EventType == "Pulse"').iloc[0].onset
 
-# correct onset & duration
-df.onset = (df.onset - first_pulse) / 10000
-df.duration = df.duration / 10000
+    # correct onset to match fMRI
+    if subtract_pulse:
+        df.onset = df.onset - first_pulse
 
-# Choose relevant rows & columns
-subset = (
-    df
-    .query('trial_type in ["fix", "cs_plus", "cs_minus", "US_stim_ON"]')
-    .loc[:, ['onset', 'duration', 'trial_type']]
+    # convert onset & duration to seconds
+    df.onset = df.onset / 10000
+    df.duration = df.duration / 10000
+
+    # rename fix_2 (used in DE for reasons unknown) to fix
+    df.trial_type.replace('fix_2', 'fix', inplace=True)
+
+    # Choose relevant rows & columns
+    subset = (
+        df
+        .query('trial_type in ["fix", "cs_plus", "cs_minus", "US_stim_ON"]')
+        .loc[:, ['onset', 'duration', 'trial_type']]
+        )
+
+    # Rename US trial_type
+    subset.trial_type.replace('US_stim_ON', 'us', inplace=True)
+
+    # Set us duration to 1.5 (which approximates how long the reaction lasts)
+    subset.loc[subset.trial_type == 'us', 'duration'] = 1.5
+
+    # Add 'value' column with corresponding port codes
+    subset.loc[:, 'value'] = subset.trial_type.map(
+        {'cs_plus': 1, 'cs_minus': 2, 'fix': 7, 'us': 8}
     )
 
-# Rename US trial_type
-subset.trial_type.replace('US_stim_ON', 'us', inplace=True)
+    return subset
 
-# Set us duration to 1.5 (which approximates how long the reaction lasts)
-subset.loc[subset.trial_type == 'us', 'duration'] = 1.5
 
-# Add 'value' column with corresponding port codes
-subset.loc[:, 'value'] = subset.trial_type.map(
-    {'cs_plus': 1, 'cs_minus': 2, 'fix': 7, 'us': 8}
-)
+def read_video_logfile(log_fname, video_substitutions):
 
-print(subset.head())
+    rename_dict = {'Event Type': 'EventType', 'Time': 'onset'}
+
+    # find fMRI and video onsets, first 10 rows should be plenty
+    df = pandas.read_csv(log_fname, sep='\t', skiprows=3, nrows=10)
+    df.rename(columns=rename_dict, inplace=True)
+
+    first_pulse = df.query('EventType == "Pulse"').iloc[0].onset
+    video_start = df.query('EventType == "Video"').iloc[0].onset
+
+    # calculate the difference to be added to original onsets
+    video_delay = (video_start - first_pulse) / 10000
+
+    # read file until video summary and get the video file name
+    with open(log_fname) as f:
+        while f.readline().rstrip() != 'video summary':
+            pass
+        f.readline()
+        v_summary = f.readline().rstrip().split('\t')
+
+    # get filename without extension; stimuli\(anything but dot).avi
+    vid_code = re.search(r'stimuli\\([^.]+)\.avi', v_summary[0]).group(1)
+
+    # filename = code in most cases, but we also used a different naming scheme
+    if vid_code in video_substitutions:
+        vid_code = video_substitutions[vid_code]
+
+    # load codes as usual (but without correcting for first pulse)
+    orig = os.path.join(
+        os.path.dirname(log_fname),
+        '{}-procedure OFL.log'. format(vid_code),
+        )
+    events = read_logfile(orig, subtract_pulse=False)
+
+    # add video_delay to onsets
+    events.onset = events.onset + video_delay
+
+    return events
+
+
+def capitalise(s):
+    return s[0].upper() + s[1:].lower()
+
+
+BIDS_ROOT = '/Volumes/MyBookPro/emocon_mri/emocon'
+LOG_FOLDER = '/Volumes/MyBookPro/emocon_mri/log'
+
+code = 'BQHLDK'
+
+video_dict = {
+    'GYF_full': 'GYFXOU',
+    'GYF_inverse': 'GYFXOU',
+    'SUB-1': 'FRAMWY',
+    'SUB-2': 'PAZHLQ',
+    'QETQJZ': 'QETWJZ'
+}
+
+# initialise the bids layout
+layout = BIDSLayout(BIDS_ROOT, validate=False, absolute_paths=True)
+
+# patterns for globbing
+ofl_pat = '{}-procedure OFL.log'.format(code.upper())
+ofl_vid_pat = '{}-ofl_v_?.log'.format(code.upper())
+de_pat = '{}-procedure DE.log'.format(code.upper())
+
+# glob the files
+logs_ofl = glob.glob(os.path.join(LOG_FOLDER, ofl_pat))
+logs_ofl_vid = glob.glob(os.path.join(LOG_FOLDER, ofl_vid_pat))
+logs_de = glob.glob(os.path.join(LOG_FOLDER, de_pat))
+
+if len(logs_de) != 1 or (len(logs_ofl) + len(logs_ofl_vid)) != 1:
+    raise RuntimeError('Could not find the right number of log files')
+
+# load events
+events = {}
+if len(logs_ofl) == 1:
+    events['ofl'] = read_logfile(logs_ofl[0])
+else:
+    events['ofl'] = read_video_logfile(logs_ofl_vid[0], video_dict)
+
+events['de'] = read_logfile(logs_de[0])
+
+# save the events
+for task in ('ofl', 'de'):
+    # placeholder files are created by heudiconv, so we can use get
+    tsv_file = layout.get(
+        subject=capitalise(code),
+        datatype='func',
+        task=task,
+        suffix='events',
+        extension='tsv',
+        return_type='filename',
+        )
+    events[task].to_csv(tsv_file[0], sep='\t', index=False)
+    print('Written', tsv_file[0])
