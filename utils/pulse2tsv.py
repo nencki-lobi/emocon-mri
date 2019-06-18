@@ -1,3 +1,5 @@
+import argparse
+import configparser
 import glob
 import os
 import json
@@ -156,26 +158,35 @@ def capitalise(s):
     return s[0].upper() + s[1:].lower()
 
 
-DICOM_DIR = '/Volumes/MyBookPro/emocon_mri/dicom'
-PULSE_DIR = '/Volumes/MyBookPro/emocon_mri/pulse'
-BIDS_ROOT = '/Volumes/MyBookPro/emocon_mri/emocon'
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-code = 'BQHLDK'
+DICOM_DIR = config['DEFAULT']['DICOM_DIR']
+PULSE_DIR = config['DEFAULT']['PULSE_DIR']
+BIDS_ROOT = config['DEFAULT']['BIDS_ROOT']
 
-pulse_f = get_pulse_files(PULSE_DIR, code)
+parser = argparse.ArgumentParser()
+parser.add_argument('participant_label', nargs='+')
+args = parser.parse_args()
+
 layout = BIDSLayout(BIDS_ROOT, validate=False)
 
-if len(pulse_f) == 2:
-    for i, task_name in enumerate(['ofl', 'de']):
-        pulse_file = pulse_f[i]
-        dicom_file = get_dicom_files(DICOM_DIR, code, task_name)
-        pdata, info = create_for_one(dicom_file, pulse_file)
-        save_pulse(pdata, info, layout, capitalise(code), task_name)
-else:
-    first_ofl, last_ofl = get_dicom_files(DICOM_DIR, code, 'ofl', True)
-    first_de = get_dicom_files(DICOM_DIR, code, 'de', False)
-    pdata_ofl, info_ofl, pdata_de, info_de = create_for_two(
-        first_ofl, last_ofl, first_de, pulse_f[0]
-        )
-    save_pulse(pdata_ofl, info_ofl, layout, capitalise(code), 'ofl')
-    save_pulse(pdata_de, info_de, layout, capitalise(code), 'de')
+for code in args.participant_label:
+    pulse_f = get_pulse_files(PULSE_DIR, code.upper())
+
+    if len(pulse_f) == 2:
+        for i, task_name in enumerate(['ofl', 'de']):
+            pulse_file = pulse_f[i]
+            dicom_file = get_dicom_files(DICOM_DIR, capitalise(code),
+                                         task_name)
+            pdata, info = create_for_one(dicom_file, pulse_file)
+            save_pulse(pdata, info, layout, capitalise(code), task_name)
+    else:
+        first_ofl, last_ofl = get_dicom_files(DICOM_DIR, capitalise(code),
+                                              'ofl', return_last=True)
+        first_de = get_dicom_files(DICOM_DIR, capitalise(code), 'de')
+        pdata_ofl, info_ofl, pdata_de, info_de = create_for_two(
+            first_ofl, last_ofl, first_de, pulse_f[0]
+            )
+        save_pulse(pdata_ofl, info_ofl, layout, capitalise(code), 'ofl')
+        save_pulse(pdata_de, info_de, layout, capitalise(code), 'de')

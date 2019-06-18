@@ -1,3 +1,5 @@
+import argparse
+import configparser
 import glob
 import os
 import pandas
@@ -97,10 +99,15 @@ def capitalise(s):
     return s[0].upper() + s[1:].lower()
 
 
-BIDS_ROOT = '/Volumes/MyBookPro/emocon_mri/emocon'
-LOG_FOLDER = '/Volumes/MyBookPro/emocon_mri/log'
+parser = argparse.ArgumentParser()
+parser.add_argument('participant_label', nargs='+')
+args = parser.parse_args()
 
-code = 'BQHLDK'
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+BIDS_ROOT = config['DEFAULT']['BIDS_ROOT']
+LOG_DIR = config['DEFAULT']['LOG_DIR']
 
 video_dict = {
     'GYF_full': 'GYFXOU',
@@ -113,38 +120,40 @@ video_dict = {
 # initialise the bids layout
 layout = BIDSLayout(BIDS_ROOT, validate=False, absolute_paths=True)
 
-# patterns for globbing
-ofl_pat = '{}-procedure OFL.log'.format(code.upper())
-ofl_vid_pat = '{}-ofl_v_?.log'.format(code.upper())
-de_pat = '{}-procedure DE.log'.format(code.upper())
+for code in args.participant_label:
 
-# glob the files
-logs_ofl = glob.glob(os.path.join(LOG_FOLDER, ofl_pat))
-logs_ofl_vid = glob.glob(os.path.join(LOG_FOLDER, ofl_vid_pat))
-logs_de = glob.glob(os.path.join(LOG_FOLDER, de_pat))
+    # patterns for globbing
+    ofl_pat = '{}-procedure OFL.log'.format(code.upper())
+    ofl_vid_pat = '{}-ofl_v_?.log'.format(code.upper())
+    de_pat = '{}-procedure DE.log'.format(code.upper())
 
-if len(logs_de) != 1 or (len(logs_ofl) + len(logs_ofl_vid)) != 1:
-    raise RuntimeError('Could not find the right number of log files')
+    # glob the files
+    logs_ofl = glob.glob(os.path.join(LOG_DIR, ofl_pat))
+    logs_ofl_vid = glob.glob(os.path.join(LOG_DIR, ofl_vid_pat))
+    logs_de = glob.glob(os.path.join(LOG_DIR, de_pat))
 
-# load events
-events = {}
-if len(logs_ofl) == 1:
-    events['ofl'] = read_logfile(logs_ofl[0])
-else:
-    events['ofl'] = read_video_logfile(logs_ofl_vid[0], video_dict)
+    if len(logs_de) != 1 or (len(logs_ofl) + len(logs_ofl_vid)) != 1:
+        raise RuntimeError('Could not find the right number of log files')
 
-events['de'] = read_logfile(logs_de[0])
+    # load events
+    events = {}
+    if len(logs_ofl) == 1:
+        events['ofl'] = read_logfile(logs_ofl[0])
+    else:
+        events['ofl'] = read_video_logfile(logs_ofl_vid[0], video_dict)
 
-# save the events
-for task in ('ofl', 'de'):
-    # placeholder files are created by heudiconv, so we can use get
-    tsv_file = layout.get(
-        subject=capitalise(code),
-        datatype='func',
-        task=task,
-        suffix='events',
-        extension='tsv',
-        return_type='filename',
-        )
-    events[task].to_csv(tsv_file[0], sep='\t', index=False)
-    print('Written', tsv_file[0])
+    events['de'] = read_logfile(logs_de[0])
+
+    # save the events
+    for task in ('ofl', 'de'):
+        # placeholder files are created by heudiconv, so we can use get
+        tsv_file = layout.get(
+            subject=capitalise(code),
+            datatype='func',
+            task=task,
+            suffix='events',
+            extension='tsv',
+            return_type='filename',
+            )
+        events[task].to_csv(tsv_file[0], sep='\t', index=False)
+        print('Written', tsv_file[0])
