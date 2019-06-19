@@ -155,5 +155,6 @@ for code in args.participant_label:
             extension='tsv',
             return_type='filename',
             )
-        events[task].to_csv(tsv_file[0], sep='\t', index=False)
+        events[task].to_csv(tsv_file[0], sep='\t', index=False,
+                            float_format='%.3f')
         print('Written', tsv_file[0])
