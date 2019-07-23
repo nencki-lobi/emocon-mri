@@ -1,12 +1,15 @@
 import argparse
 import configparser
 import numpy as np
+import os
 import pandas
 
 from bids import BIDSLayout
 from scipy import io
 
 parser = argparse.ArgumentParser()
+parser.add_argument('output_dir')
+parser.add_argument('--participant-label', nargs='+')
 parser.add_argument('--cs-duration', type=float)
 parser.add_argument('--us-duration', type=float)
 args = parser.parse_args()
@@ -23,10 +26,25 @@ trials_to_include = {
 
 layout = BIDSLayout(BIDS_ROOT, validate=False, absolute_paths=True)
 
-subjects = layout.get_subjects()[:1]
+# figure out which subjects to use
+if args.participant_label is None:
+    # if not specified, take all subjects
+    subjects = layout.get_subjects()
+else:
+    # take the specified subjects
+    subjects = args.participant_label
+    # check if all are present in the layout, if not then crash now
+    available_subjects = layout.get_subjects()
+    for s in subjects:
+        if s not in available_subjects:
+            raise RuntimeError('Subject {} not present in dataset'.format(s))
+
+# all tasks will be processed
 tasks = layout.get_tasks()
-# TODO: allow specifying subjects
-# TODO: if subjects specified, check if present in the layout
+
+# create the output folder if it does not exist
+if not os.path.exists(args.output_dir):
+    os.makedirs(args.output_dir)
 
 for subject in subjects:
     for task in tasks:
@@ -66,9 +84,9 @@ for subject in subjects:
             else:
                 durations[i] = matching_events.duration.values
 
-        out_file = '/Users/michal/Desktop/' + subject + '_' + task + '.mat'
-        # TODO: manage the output
+        out_file = '{}_{}.mat'.format(subject, task)
+        out_path = os.path.join(args.output_dir, out_file)
         io.savemat(
-            file_name=out_file,
+            file_name=out_path,
             mdict={'names': names, 'onsets': onsets, 'durations': durations}
             )
