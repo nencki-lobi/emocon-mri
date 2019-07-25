@@ -3,3 +3,6 @@ DICOM_DIR = /Volumes/MyBookPro/emocon_mri/dicom
 PULSE_DIR = /Volumes/MyBookPro/emocon_mri/pulse
 LOG_DIR = /Volumes/MyBookPro/emocon_mri/log
 BIDS_ROOT = /Volumes/MyBookPro/emocon_mri/emotional_contagion
+DERIV_DIR = /Volumes/MyBookPro/emocon_mri/derived
+[SPM]
+CONFOUNDS = /Volumes/MyBookPro/emocon_mri/spm/confounds
