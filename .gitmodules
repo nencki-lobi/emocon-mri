@@ -1,0 +1,3 @@
+[submodule "eda/ecphysio"]
+	path = eda/ecphysio
+	url = git@gitlab.com:MSz/ecphysio.git
