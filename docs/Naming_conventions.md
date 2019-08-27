@@ -29,6 +29,14 @@ while task name (if present) should be suffixed in lowercase:
 
 `EC_ABCDEF_ofl.puls` or `EC_ABCDEF.puls`
 
+
+### EDA files
+
+In EDA files, the subject code should be all-caps.
+The EC prefix must not be present.
+
+`ABCDEF.eeg` & `ABCDEF.vhdr` & `ABCDEF.vmrk`
+
 ### NIfTi files
 
 Subject codes in NIfTi files should be capitalised, following the Horos
