@@ -2,7 +2,6 @@ import argparse
 import configparser
 import glob
 import os
-import numpy as np
 import pandas
 import mne
 import matplotlib.pyplot as plt
@@ -10,7 +9,6 @@ import scipy.signal as ss
 
 from ecphysio.eventhandler import EventCollection
 from ecphysio.eda import Trial
-from ecphysio.cvxEDA import cvxEDA
 
 
 def read_data(hdr_path):
@@ -46,8 +44,9 @@ def process_phase(all_signal, all_events, start_mrk, stop_mrk, fs):
     # extract relevant signal & events
     signal, events = extract_phase(all_signal, all_events, start_mrk, stop_mrk)
 
-    # decompose (later replace with 0.05 - 1 Hz filtering)
-    [r, p, t, l, d, e, obj] = cvxEDA(signal, 1/fs)
+    # design and apply bandpass filter (0.05 Hz - 1 Hz)
+    b, a = ss.butter(N=4, Wn=[0.05, 1], btype='bandpass', fs=fs)
+    filtered_eda = ss.filtfilt(b, a, signal)
 
     # extract trials
     trials = []
@@ -60,8 +59,8 @@ def process_phase(all_signal, all_events, start_mrk, stop_mrk, fs):
                             n_samples=n_s,
                             n_bl_samples=n_b_s,
                             fs=fs,
-                            signal=r,
-                            smna=p,
+                            signal=filtered_eda,
+                            smna=None,
                             ))
 
     return trials
@@ -75,7 +74,7 @@ def score_trials(list_of_trials, name):
         stimulus = 'CS+' if 1 in trial.event_values else 'CS-'
         amplitude, peak_time = trial.score_eir(
             onset=0,
-            duration=6,
+            duration=7.5,
             baseline_length=2)
 
         scores.append(
@@ -91,7 +90,7 @@ def score_trials(list_of_trials, name):
             stimulus = 'US present' if 8 in trial.event_values else 'US absent'
             amplitude, peak_time = trial.score_eir(
                 onset=7.5,
-                duration=6,
+                duration=7.5,
                 baseline_length=2)
 
             scores.append(
@@ -104,51 +103,20 @@ def score_trials(list_of_trials, name):
     return scores
 
 
-def score_trials_smna(list_of_trials, name):
-
-    scores = []
-    for n, trial in enumerate(list_of_trials):
-
-        if name == 'obs' and 1 in trial.event_values:
-            # for obs, score only US / noUS
-            stimulus = 'US present' if 8 in trial.event_values else 'US absent'
-            amplitude, peak_time = trial.score_smna(onset=7.5, duration=6)
-
-        elif name == 'direct':
-            # for direct, score CSs over all duration
-            stimulus = 'CS+' if 1 in trial.event_values else 'CS-'
-            amplitude, peak_time = trial.score_smna(onset=0, duration=9)
-
-        else:
-            # ignore other trials
-            continue
-
-        scores.append(
-            {
-                'stimulus': '{} {}'.format(name, stimulus),
-                'trial': n,
-                'amplitude': amplitude
-            })
-    return scores
-
-
-def save_scores(list_of_scores, subject_code, suffix=''):
-    df_directory = os.path.expanduser(os.path.join('~/', 'Desktop', 'eda'))
+def save_scores(list_of_scores, subject_code, df_directory):
     df = pandas.DataFrame.from_records(list_of_scores)
 
     if not os.path.exists(df_directory):
         os.makedirs(df_directory)
-    df_filename = os.path.join(df_directory, subject_code + suffix + '.pickle')
+    df_filename = os.path.join(df_directory, subject_code + '.pickle')
+    print('Saving', df_filename)
     df.to_pickle(df_filename)
 
 
 def plot_trials(nrows, ncols, trials, fname):
     fig, axs = plt.subplots(nrows, ncols, figsize=(12.8, 7.2), sharey=True)
-    pmax = np.max([trial.smna.max() for trial in trials])
     for i, ax in enumerate(axs.flat):
-        tx = ax.twinx()
-        tx.set_ylim(0, pmax)
-        trials[i].plot(ax, tx)
+        trials[i].plot(ax)
     fig.savefig(fname)
     plt.close(fig)
 
@@ -159,6 +127,10 @@ config.read('config.ini')
 
 EDA_DIR = config['DEFAULT']['EDA_DIR']
 BIDS_ROOT = config['DEFAULT']['BIDS_ROOT']
+EDA_DERIV_DIR = config['PHYSIO']['EDA_DERIV_DIR']
+
+eda_scores_dir = os.path.join(EDA_DERIV_DIR, 'peak_to_peak', 'scores')
+eda_figures_dir = os.path.join(EDA_DERIV_DIR, 'peak_to_peak', 'figures')
 
 # parse command line arguments
 parser = argparse.ArgumentParser()
@@ -211,6 +183,7 @@ for hdr_file in vhdr_files:
     # downsample to 25 Hz
     if fs % target_fs == 0:
         ds_factor = int(fs/target_fs)
+        print('Downsampling factor:', ds_factor)
         eda = ss.decimate(eda, ds_factor)
         event_collection.downsample(ds_factor)
     else:
@@ -228,21 +201,12 @@ for hdr_file in vhdr_files:
     scores = scores_ofl + scores_de
     for score in scores:
         score['code'] = code
-    save_scores(scores, code)
-
-    # score & save also the SMNA while we have it
-    smna_ofl = score_trials_smna(trials_ofl, 'obs')
-    smna_de = score_trials_smna(trials_de, 'direct')
-    smna_all = smna_ofl + smna_de
-    for s in smna_all:
-        s['code'] = code
-    save_scores(smna_all, code, '_smna')
+    save_scores(scores, code, eda_scores_dir)
 
     # plot trials
-    fig_directory = os.path.expanduser('~/Desktop/eda/figures')  # todo
-    if not os.path.exists(fig_directory):
-        os.makedirs(fig_directory)
+    if not os.path.exists(eda_figures_dir):
+        os.makedirs(eda_figures_dir)
     plot_trials(8, 6, trials_ofl,
-                fname=os.path.join(fig_directory, code + '_trials_OFL.png'))
+                fname=os.path.join(eda_figures_dir, code + '_trials_OFL.png'))
     plot_trials(6, 4, trials_de,
-                fname=os.path.join(fig_directory, code + '_trials_DE.png'))
+                fname=os.path.join(eda_figures_dir, code + '_trials_DE.png'))
