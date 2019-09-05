@@ -1,6 +1,7 @@
 [DEFAULT]
 DICOM_DIR = /Volumes/MyBookPro/emocon_mri/dicom
 PULSE_DIR = /Volumes/MyBookPro/emocon_mri/pulse
+EDA_DIR = /Volumes/MyBookPro/emocon_mri/eda
 LOG_DIR = /Volumes/MyBookPro/emocon_mri/log
 BIDS_ROOT = /Volumes/MyBookPro/emocon_mri/emotional_contagion
 DERIV_DIR = /Volumes/MyBookPro/emocon_mri/derived
