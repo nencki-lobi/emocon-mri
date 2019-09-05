@@ -201,6 +201,7 @@ for hdr_file in vhdr_files:
     scores = scores_ofl + scores_de
     for score in scores:
         score['code'] = code
+        score['group'] = group
     save_scores(scores, code, eda_scores_dir)
 
     # plot trials
@@ -210,3 +211,12 @@ for hdr_file in vhdr_files:
                 fname=os.path.join(eda_figures_dir, code + '_trials_OFL.png'))
     plot_trials(6, 4, trials_de,
                 fname=os.path.join(eda_figures_dir, code + '_trials_DE.png'))
+
+# Aggregate all existing files into one dataframe, save it also as feather
+subject_files = glob.glob(os.path.join(eda_scores_dir, '?????[A-Z].pickle'))
+dataframes = [pandas.read_pickle(f) for f in subject_files]
+df_all = pandas.concat(dataframes, ignore_index=True)
+pickle_path = os.path.join(eda_scores_dir, 'all_scores.pickle')
+feather_path = os.path.join(eda_scores_dir, 'all_scores.feather')
+df_all.to_pickle(pickle_path)
+df_all.to_feather(feather_path)
