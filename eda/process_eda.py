@@ -7,8 +7,9 @@ import mne
 import matplotlib.pyplot as plt
 import scipy.signal as ss
 
-from ecphysio.eventhandler import EventCollection
+from ecphysio.eventhandler import EventCollection, Event
 from ecphysio.eda import Trial
+from ecphysio.retrieve_events import get_events_table
 
 
 def read_data(hdr_path):
@@ -127,6 +128,7 @@ config.read('config.ini')
 
 EDA_DIR = config['DEFAULT']['EDA_DIR']
 BIDS_ROOT = config['DEFAULT']['BIDS_ROOT']
+LOG_DIR = config['DEFAULT']['LOG_DIR']
 EDA_DERIV_DIR = config['PHYSIO']['EDA_DERIV_DIR']
 
 eda_scores_dir = os.path.join(EDA_DERIV_DIR, 'peak_to_peak', 'scores')
@@ -162,17 +164,40 @@ for hdr_file in vhdr_files:
     # obtain subject code
     code = os.path.splitext(os.path.basename(hdr_file))[0]
 
+    # skip problematic subjects
+    if code == 'GPTFWI':
+        # video start marker missing
+        # information can be recovered by looking at R 64 (scanner pulses)
+        continue
+
     # obtain subject group
     group = group_table.loc[code].group
-
-    # skip stranger group (for now)
-    if group == 'stranger':
-        continue
 
     # load data & events
     eda, event_collection, fs = read_data(hdr_file)
 
-    # TODO: for stranger group load OFL events from log file WOHOOO!
+    # for stranger group, create OFL events from log files
+    if group == 'stranger':
+
+        # find timestamp for video start & discard that event
+        vstart = event_collection.events.pop(0)
+        if vstart.value != 1:
+            err_msg = 'Unexpected starting marker for {}'.format(code)
+            raise RuntimeError(err_msg)
+
+        # get stimulus timing from live observer's logfile
+        table = get_events_table(LOG_DIR, code, fs)
+
+        # add events to event collection
+        ofl_events = [Event(sample=vstart.sample, value=13)]
+        for i, row in table.iterrows():
+            ofl_events.append(
+                Event(
+                    sample=row.sampleNo + vstart.sample,
+                    value=row.value,
+                    )
+                )
+        event_collection.events = ofl_events + event_collection.events
 
     # fix events if necessary
     if code == 'ZTLHXI':
