@@ -5,6 +5,7 @@ import os
 import json
 import numpy as np
 import pydicom
+import re
 from bids import BIDSLayout
 from itertools import islice
 
@@ -118,7 +119,40 @@ def save_pulse(data, info, layout, subject, task):
         print('Written', json_file)
 
 
-def get_dicom_files(dicom_root, code, task, return_last=False):
+def get_volume_number(fname):
+    """Get volume number from xnat dicom file name"""
+    pat = re.compile('[0-9.]*-[0-9]+-([0-9]+)-[0-9a-z]*.dcm')
+    try:
+        n = int(re.match(pat, fname).group(1))
+    except AttributeError as ae:
+        print('!', fname)
+        raise ae
+    return n
+
+
+def list_subdirs(parent_dir):
+    subdirs = []
+    for elem in os.listdir(parent_dir):
+        if os.path.isdir(os.path.join(parent_dir, elem)):
+            subdirs.append(elem)
+    return subdirs
+
+
+def get_dicom_files(dicom_root, code, task, return_last=None):
+    subject_folder = os.path.join(dicom_root, 'Ec_{}'.format(code))
+    session_id = list_subdirs(subject_folder)[0]
+
+    if session_id.startswith('Head'):
+        # Head_12ch_Emocon - 1
+        return get_horos_dicoms(dicom_root, code, task, return_last)
+    elif session_id.startswith('20'):
+        # 20190903_....
+        return get_xnat_dicoms(dicom_root, code, task, return_last)
+    else:
+        raise RuntimeWarning('Can not decide if Horos or Xnat')
+
+
+def get_horos_dicoms(dicom_root, code, task, return_last=False):
     """Get first, or first & last dicom for a given series"""
     task_folders = glob.glob(os.path.join(
         dicom_root, 'Ec_{}'.format(code), '*', 'task{}*'.format(task),
@@ -138,6 +172,40 @@ def get_dicom_files(dicom_root, code, task, return_last=False):
         return first, last
     else:
         first = os.path.join(task_folder, files[0])
+        return first
+
+
+def get_xnat_dicoms(dicom_root, code, task, return_last=False):
+    """Get file names for a given code / task
+    Task names are looked up in dicoms and the order is taken from filenames.
+    Could as well extract times, but kept this way for compatibility.
+    """
+    mydict = {}
+    subject_folder = os.path.join(dicom_root, 'Ec_{}'.format(code))
+    session_id = list_subdirs(subject_folder)[0]  # assuming just one
+    series_ids = list_subdirs(os.path.join(subject_folder, session_id))
+    for series_id in series_ids:
+        s_dir = os.path.join(subject_folder, session_id, series_id, 'DICOM')
+        series_files = sorted(os.listdir(s_dir), key=get_volume_number)
+        first = os.path.join(s_dir, series_files[0])
+        last = os.path.join(s_dir, series_files[-1])
+        ds = pydicom.dcmread(first)
+        desc = ds.SeriesDescription
+        try:
+            current_task = re.match('task-([a-zA-Z]+)', desc).group(1)
+        except AttributeError:
+            continue
+        if current_task not in mydict:
+            mydict[current_task] = (first, last)
+        else:
+            raise RuntimeError(
+                'Found multiple occurrences of task {}'.format(current_task)
+                )
+
+    first, last = mydict[task]
+    if return_last:
+        return first, last
+    else:
         return first
 
 
