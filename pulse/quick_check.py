@@ -1,3 +1,7 @@
+"""
+This script can be used to plot the PulseOx trace for a given subject.
+"""
+
 import argparse
 import configparser
 import matplotlib.pyplot as plt
@@ -21,8 +25,29 @@ files = layout.get(
     extension='tsv.gz',
     )
 
-print(files)
-print(files[0].entities['task'])
-print(files[0].entities['SamplingFrequency'])
-print(files[0].entities['StartTime'])
-print(files[0].filename)
+if len(files) == 0:
+    print('No physio recordings for subject', args.participant_label)
+
+for obj in files:
+
+    data = np.loadtxt(obj.path)
+
+    metadata = obj.get_metadata()
+    fs = metadata['SamplingFrequency']
+    start_time = metadata['StartTime']
+
+    ent = obj.get_entities()
+
+    if start_time < 0:
+        start_sample = - start_time * fs
+        data = data[int(start_sample):]
+        time = np.arange(0, data.shape[0]/fs, 1/fs)
+    else:
+        time = np.arange(0, data.shape[0]/fs, 1/fs) + start_time
+
+    plt.figure(figsize=(9, 6))
+    plt.plot(time, data)
+    plt.xlabel('time [s]')
+    plt.title('subject: {}, task: {}'.format(ent['subject'], ent['task']))
+
+plt.show()
