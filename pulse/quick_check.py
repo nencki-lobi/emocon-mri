@@ -41,9 +41,9 @@ for obj in files:
     if start_time < 0:
         start_sample = - start_time * fs
         data = data[int(start_sample):]
-        time = np.arange(0, data.shape[0]/fs, 1/fs)
+        time = np.linspace(0, data.shape[0]/fs, data.shape[0])
     else:
-        time = np.arange(0, data.shape[0]/fs, 1/fs) + start_time
+        time = np.linspace(0, data.shape[0]/fs, data.shape[0]) + start_time
 
     plt.figure(figsize=(9, 6))
     plt.plot(time, data)
