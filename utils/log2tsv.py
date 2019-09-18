@@ -54,7 +54,7 @@ def read_logfile(log_fname, subtract_pulse=True):
     return subset
 
 
-def read_video_logfile(log_fname, video_substitutions):
+def read_video_logfile(log_fname, video_substitutions, video_shifts):
 
     rename_dict = {'Event Type': 'EventType', 'Time': 'onset'}
 
@@ -82,7 +82,7 @@ def read_video_logfile(log_fname, video_substitutions):
     if vid_code in video_substitutions:
         vid_code = video_substitutions[vid_code]
 
-    # load codes as usual (but without correcting for first pulse)
+    # load onsets as usual (but without correcting for first pulse)
     orig = os.path.join(
         os.path.dirname(log_fname),
         '{}-procedure OFL.log'. format(vid_code),
@@ -91,6 +91,10 @@ def read_video_logfile(log_fname, video_substitutions):
 
     # add video_delay to onsets
     events.onset = events.onset + video_delay
+
+    # some videos start after scenario beginning, subtract offset in such case
+    if vid_code in video_shifts:
+        events.onset = events.onset - video_shifts[vid_code]
 
     return events
 
@@ -117,6 +121,14 @@ video_dict = {
     'QETQJZ': 'QETWJZ'
 }
 
+# required shifts for videos which start after scenario beginning
+video_offsets = {
+    'ASSYXO': 22.0,
+    'HVDPMG': 14.26,
+    'HWTFRX': 19.0,
+    'LGBBCQ': 12.0,
+    }
+
 # initialise the bids layout
 layout = BIDSLayout(BIDS_ROOT, validate=False, absolute_paths=True)
 
@@ -140,7 +152,8 @@ for code in args.participant_label:
     if len(logs_ofl) == 1:
         events['ofl'] = read_logfile(logs_ofl[0])
     else:
-        events['ofl'] = read_video_logfile(logs_ofl_vid[0], video_dict)
+        events['ofl'] = read_video_logfile(logs_ofl_vid[0], video_dict,
+                                           video_offsets)
 
     events['de'] = read_logfile(logs_de[0])
 

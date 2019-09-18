@@ -149,6 +149,14 @@ else:
 # constants
 target_fs = 25
 
+# required shifts for videos which start after scenario beginning
+video_offsets = {
+    'ASSYXO': 22.0,
+    'HVDPMG': 14.26,
+    'HWTFRX': 19.0,
+    'LGBBCQ': 12.0,
+    }
+
 # load group assignment
 group_table = pandas.read_csv(
     filepath_or_buffer=os.path.join(BIDS_ROOT, 'participants.tsv'),
@@ -186,7 +194,8 @@ for hdr_file in vhdr_files:
             raise RuntimeError(err_msg)
 
         # get stimulus timing from live observer's logfile
-        table = get_events_table(LOG_DIR, code, fs)
+        shift = video_offsets.get(code, None)
+        table = get_events_table(LOG_DIR, code, fs, shift)
 
         # add events to event collection
         ofl_events = [Event(sample=vstart.sample, value=13)]
