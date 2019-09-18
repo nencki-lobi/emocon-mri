@@ -31,6 +31,13 @@ nipy/heudiconv:0.5.4 \
 -s Qetwjz Raljam Rjqmzc Slcpsu Wjydns Yxjduz Ztlxhi Zuibrx Zvcapy
 ```
 
+When working with data obtained through XNAT, use the following dicom dir
+template instead:
+
+```
+-d "/dicomdir/Ec_{subject}/*/*/DICOM/*.dcm"
+```
+
 ### Sed - fixing vhdr files
 
 There is a missing whitespace between _Name_ and _Phys. Chn._ columns in the vhdr
