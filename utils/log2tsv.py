@@ -1,6 +1,7 @@
 import argparse
 import configparser
 import glob
+import json
 import os
 import pandas
 import re
@@ -122,12 +123,8 @@ video_dict = {
 }
 
 # required shifts for videos which start after scenario beginning
-video_offsets = {
-    'ASSYXO': 22.0,
-    'HVDPMG': 14.26,
-    'HWTFRX': 19.0,
-    'LGBBCQ': 12.0,
-    }
+with open('utils/video_offsets.json') as f:
+    video_offsets = json.load(f)
 
 # initialise the bids layout
 layout = BIDSLayout(BIDS_ROOT, validate=False, absolute_paths=True)

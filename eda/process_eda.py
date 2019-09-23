@@ -1,6 +1,7 @@
 import argparse
 import configparser
 import glob
+import json
 import os
 import pandas
 import mne
@@ -150,12 +151,8 @@ else:
 target_fs = 25
 
 # required shifts for videos which start after scenario beginning
-video_offsets = {
-    'ASSYXO': 22.0,
-    'HVDPMG': 14.26,
-    'HWTFRX': 19.0,
-    'LGBBCQ': 12.0,
-    }
+with open('utils/video_offsets.json') as f:
+    video_offsets = json.load(f)
 
 # load group assignment
 group_table = pandas.read_csv(
