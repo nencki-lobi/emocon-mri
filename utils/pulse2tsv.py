@@ -218,6 +218,10 @@ def get_pulse_files(pulse_root, code):
         return ofl, de
     elif os.path.isfile(both):
         return (both,)
+    elif os.path.isfile(ofl):
+        return ofl, None  # ofl, but not de, file present
+    elif os.path.isfile(de):
+        return None, de  # de, but not ofl, file present
     else:
         raise RuntimeError('Can not find pulse for subject {}', code)
 
@@ -245,6 +249,9 @@ for code in args.participant_label:
     if len(pulse_f) == 2:
         for i, task_name in enumerate(['ofl', 'de']):
             pulse_file = pulse_f[i]
+            if pulse_file is None:
+                print(code, task_name, 'file not present')
+                continue
             dicom_file = get_dicom_files(DICOM_DIR, capitalise(code),
                                          task_name)
             pdata, info = create_for_one(dicom_file, pulse_file)
