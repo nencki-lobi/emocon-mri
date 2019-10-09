@@ -138,7 +138,7 @@ def list_subdirs(parent_dir):
     return subdirs
 
 
-def get_dicom_files(dicom_root, code, task, return_last=None):
+def get_dicom_files(dicom_root, code, task, return_last=False):
     subject_folder = os.path.join(dicom_root, 'Ec_{}'.format(code))
     session_id = list_subdirs(subject_folder)[0]
 
@@ -230,6 +230,46 @@ def capitalise(s):
     return s[0].upper() + s[1:].lower()
 
 
+def fix_zrzxcw(dicom_root, pulse_dir, layout):
+    """Let me tell you about the time we saved two subjects in one file..."""
+
+    zrzxcw_dicoms = get_dicom_files(dicom_root, 'Zrzxcw', 'de', True)
+    zrzxcw_ds = [pydicom.dcmread(f) for f in zrzxcw_dicoms]
+    zrzxcw_times = [dicomtime2sec(ds.AcquisitionTime) for ds in zrzxcw_ds]
+
+    krulak_dicoms = get_dicom_files(dicom_root, 'Krulak', 'ofl', True)
+    krulak_ds = [pydicom.dcmread(f) for f in krulak_dicoms]
+    krulak_times = [dicomtime2sec(ds.AcquisitionTime) for ds in krulak_ds]
+
+    pulse_f = get_pulse_files(pulse_dir, 'ZRZXCW')
+
+    # nothing wrong with OFL, save normally
+    zrzxcw_ofl_dicom = get_dicom_files(dicom_root, 'Zrzxcw', 'ofl', False)
+    pdata, info = create_for_one(zrzxcw_ofl_dicom, pulse_f[0])
+    save_pulse(pdata, info, layout, 'Zrzxcw', 'ofl')
+
+    # calculate start / end times relative to DE pulse
+    added_seconds = 10  # take additional 10 seconds at start / end
+    pdata, pmeta = load_pulse(pulse_f[1])
+    pulse_start = pulsetime2sec(pmeta['LogStartMPCUTime'])
+    zrzxcw_end = zrzxcw_times[1] - pulse_start + added_seconds
+    krulak_start = krulak_times[0] - pulse_start - added_seconds
+    krulak_end = krulak_times[1] - pulse_start + added_seconds
+    fs = 50
+
+    # load pulse data (will be trimmed) & create info for DE
+    pdata, info = create_for_one(zrzxcw_dicoms[0], pulse_f[1])
+
+    # save DE - trim only at the end, so start time is not changed
+    pdata_zrzxcw = pdata[:int(zrzxcw_end * fs)]
+    save_pulse(pdata_zrzxcw, info, layout, 'Zrzxcw', 'de')
+
+    # save next subject's OFL
+    pdata_krulak = pdata[int(krulak_start * fs): int(krulak_end * fs)]
+    info['StartTime'] = -added_seconds
+    save_pulse(pdata_krulak, info, layout, 'Krulak', 'ofl')
+
+
 config = configparser.ConfigParser()
 config.read('config.ini')
 
@@ -244,6 +284,12 @@ args = parser.parse_args()
 layout = BIDSLayout(BIDS_ROOT, validate=False)
 
 for code in args.participant_label:
+
+    if capitalise(code) == 'Zrzxcw':
+        # special case
+        fix_zrzxcw(DICOM_DIR, PULSE_DIR, layout)
+        continue
+
     pulse_f = get_pulse_files(PULSE_DIR, code.upper())
 
     if len(pulse_f) == 2:
