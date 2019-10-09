@@ -7,7 +7,6 @@ my_config = ini2struct('../config.ini');
 
 bids_root = my_config.default.bids_root;
 work_dir = fullfile(my_config.physio.pulse_deriv_dir, 'prep');
-code = 'Bqhldk';
 
 participants = tdfread(fullfile(bids_root, 'participants.tsv'));
 p_ids = string(participants.participant_id);  % string array
@@ -16,6 +15,16 @@ codes = strrep(p_ids, 'sub-', '');
 for i = 1:length(codes)
     
     code = codes(i);
+    
+    if code == "Fudoss" || code == "Gptfwi"
+        % problem with the data files, must investigate
+        continue
+    end
+    
+    if code == "Slcpsu"
+        % "No pulse found" error on preprocessing, investigate
+       continue
+    end
 
     % check if pulse file is present
     data_file = buildMyPath(bids_root, code, 'de', 'physio', 'tsv.gz');
