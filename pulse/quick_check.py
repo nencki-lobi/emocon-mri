@@ -20,7 +20,7 @@ args = parser.parse_args()
 layout = BIDSLayout(BIDS_ROOT, validate=False)
 
 files = layout.get(
-    subject=args.participant_label,
+    subject=args.participant_label.capitalize(),
     suffix='physio',
     extension='tsv.gz',
     )

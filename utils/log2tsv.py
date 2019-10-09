@@ -100,10 +100,6 @@ def read_video_logfile(log_fname, video_substitutions, video_shifts):
     return events
 
 
-def capitalise(s):
-    return s[0].upper() + s[1:].lower()
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument('participant_label', nargs='+')
 args = parser.parse_args()
@@ -158,7 +154,7 @@ for code in args.participant_label:
     for task in ('ofl', 'de'):
         # placeholder files are created by heudiconv, so we can use get
         tsv_file = layout.get(
-            subject=capitalise(code),
+            subject=code.capitalize(),
             datatype='func',
             task=task,
             suffix='events',

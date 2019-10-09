@@ -226,10 +226,6 @@ def get_pulse_files(pulse_root, code):
         raise RuntimeError('Can not find pulse for subject {}', code)
 
 
-def capitalise(s):
-    return s[0].upper() + s[1:].lower()
-
-
 def fix_zrzxcw(dicom_root, pulse_dir, layout):
     """Let me tell you about the time we saved two subjects in one file..."""
 
@@ -285,7 +281,7 @@ layout = BIDSLayout(BIDS_ROOT, validate=False)
 
 for code in args.participant_label:
 
-    if capitalise(code) == 'Zrzxcw':
+    if code.capitalize() == 'Zrzxcw':
         # special case
         fix_zrzxcw(DICOM_DIR, PULSE_DIR, layout)
         continue
@@ -298,16 +294,16 @@ for code in args.participant_label:
             if pulse_file is None:
                 print(code, task_name, 'file not present')
                 continue
-            dicom_file = get_dicom_files(DICOM_DIR, capitalise(code),
+            dicom_file = get_dicom_files(DICOM_DIR, code.capitalize(),
                                          task_name)
             pdata, info = create_for_one(dicom_file, pulse_file)
-            save_pulse(pdata, info, layout, capitalise(code), task_name)
+            save_pulse(pdata, info, layout, code.capitalize(), task_name)
     else:
-        first_ofl, last_ofl = get_dicom_files(DICOM_DIR, capitalise(code),
+        first_ofl, last_ofl = get_dicom_files(DICOM_DIR, code.capitalize(),
                                               'ofl', return_last=True)
-        first_de = get_dicom_files(DICOM_DIR, capitalise(code), 'de')
+        first_de = get_dicom_files(DICOM_DIR, code.capitalize(), 'de')
         pdata_ofl, info_ofl, pdata_de, info_de = create_for_two(
             first_ofl, last_ofl, first_de, pulse_f[0]
             )
-        save_pulse(pdata_ofl, info_ofl, layout, capitalise(code), 'ofl')
-        save_pulse(pdata_de, info_de, layout, capitalise(code), 'de')
+        save_pulse(pdata_ofl, info_ofl, layout, code.capitalize(), 'ofl')
+        save_pulse(pdata_de, info_de, layout, code.capitalize(), 'de')
