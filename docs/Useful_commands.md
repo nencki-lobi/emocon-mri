@@ -7,7 +7,9 @@ which were used for certain tasks.
 ### Ffmpeg - converting video
 
 Join two .mp4 files:
-`ffmpeg -f concat -i mylist.txt -c copy OUTPUT`
+```
+ffmpeg -f concat -i mylist.txt -c copy OUTPUT
+```
 
 Convert a video, selecting a fragment (18:03 long) and changing resolution:
 ```

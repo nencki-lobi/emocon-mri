@@ -21,6 +21,12 @@ The subject code should be capitalised and prefixed by *Ec_*.
 
 `Ec_Abcdef/*/*/IM-0000-0000.dcm`
 
+The folder structure created by XNAT (with "Simplify downloaded archive
+structure" and "Include subject in file paths" options selected) is also
+supported, but subject codes should still follow the Horos convention.
+
+`Ec_Abcdef/*/*/DICOM/*.dcm`
+
 
 ### Pulse files
 
