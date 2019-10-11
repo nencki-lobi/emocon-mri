@@ -5,6 +5,7 @@ import json
 import os
 import pandas
 import mne
+import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal as ss
 
@@ -123,6 +124,29 @@ def plot_trials(nrows, ncols, trials, fname):
     plt.close(fig)
 
 
+def fix_gptfwi_ofl_events(hdr_path):
+    """For this subject, video start and OFL end markers were missing,
+    but can be recovered based on scanner pulse markers (R64) and log file
+    contents.
+    """
+    pulse_to_video = 0.0256  # delay read manually from logs
+    mne_data = mne.io.read_raw_brainvision(hdr_path)
+    events, event_id = mne.events_from_annotations(mne_data)
+
+    first_pulse_idx = np.where(events[:, 2] == 1064)[0][0]
+    first_pulse_sample = events[first_pulse_idx, 0]
+    added_samples = int(round(pulse_to_video * mne_data.info['sfreq']))
+    video_sample = first_pulse_sample + added_samples
+
+    last_pulse_idx = np.where(events[:, 2] == 1064)[0][379]  # last in OFL
+    end_sample = events[last_pulse_idx, 0]
+
+    vstart = Event(sample=video_sample, value=1)
+    oflend = Event(sample=end_sample, value=14)
+
+    return vstart, oflend
+
+
 # load paths
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -169,12 +193,6 @@ for hdr_file in vhdr_files:
     # obtain subject code
     code = os.path.splitext(os.path.basename(hdr_file))[0]
 
-    # skip problematic subjects
-    if code == 'GPTFWI':
-        # video start marker missing
-        # information can be recovered by looking at R 64 (scanner pulses)
-        continue
-
     # obtain subject group
     group = group_table.loc[code].group
 
@@ -185,7 +203,10 @@ for hdr_file in vhdr_files:
     if group == 'stranger':
 
         # find timestamp for video start & discard that event
-        vstart = event_collection.events.pop(0)
+        if code == 'GPTFWI':
+            vstart, oflend = fix_gptfwi_ofl_events(hdr_file)  # missing markers
+        else:
+            vstart = event_collection.events.pop(0)
         if vstart.value != 1:
             err_msg = 'Unexpected starting marker for {}'.format(code)
             raise RuntimeError(err_msg)
@@ -203,6 +224,8 @@ for hdr_file in vhdr_files:
                     value=row.value,
                     )
                 )
+        if code == 'GPTFWI':
+            ofl_events.append(oflend)
         event_collection.events = ofl_events + event_collection.events
 
     # fix events if necessary
