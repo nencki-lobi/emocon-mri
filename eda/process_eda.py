@@ -11,7 +11,7 @@ import scipy.signal as ss
 
 from ecphysio.eventhandler import EventCollection, Event
 from ecphysio.eda import Trial
-from ecphysio.retrieve_events import get_events_table
+from ecphysio.retrieve_events import get_events_table, find_demonstrator
 
 
 def read_data(hdr_path):
@@ -212,7 +212,9 @@ for hdr_file in vhdr_files:
             raise RuntimeError(err_msg)
 
         # get stimulus timing from live observer's logfile
-        shift = video_offsets.get(code, None)
+        vid_log = glob.glob(os.path.join(LOG_DIR, code + '-ofl_v_[12].log'))[0]
+        demonstrator_code = find_demonstrator(vid_log)
+        shift = video_offsets.get(demonstrator_code, None)
         table = get_events_table(LOG_DIR, code, fs, shift)
 
         # add events to event collection
