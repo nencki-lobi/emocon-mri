@@ -28,9 +28,9 @@ def read_data(hdr_path):
     return eda, event_col, sampling_freq
 
 
-def extract_phase(signal, events, start_mrk, stop_mrk):
+def extract_phase(signal, events, start_mrk, stop_mrk, bonus_samples=0):
     phase_start = events.samples_for_marker(start_mrk)[0]
-    phase_end = events.samples_for_marker(stop_mrk)[0]
+    phase_end = events.samples_for_marker(stop_mrk)[0] + bonus_samples
     phase_signal = signal[phase_start:phase_end]
     phase_events = events.events_between_events(start_mrk, stop_mrk)
     phase_ec = EventCollection.from_list(phase_events, reset_samples=True)
@@ -44,8 +44,12 @@ def process_phase(all_signal, all_events, start_mrk, stop_mrk, fs):
     n_s = (9+10)*fs  # take 9 seconds of CS and 10 seconds of fix
     n_b_s = 2*fs
 
+    # hardcoded: samples after phase end
+    n_phase_end = 5*fs  # cut signal 5 seconds after task end marker
+
     # extract relevant signal & events
-    signal, events = extract_phase(all_signal, all_events, start_mrk, stop_mrk)
+    signal, events = extract_phase(all_signal, all_events, start_mrk, stop_mrk,
+                                   bonus_samples=n_phase_end)
 
     # design and apply bandpass filter (0.05 Hz - 1 Hz)
     b, a = ss.butter(N=4, Wn=[0.05, 1], btype='bandpass', fs=fs)
