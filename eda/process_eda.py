@@ -165,13 +165,20 @@ eda_figures_dir = os.path.join(EDA_DERIV_DIR, 'peak_to_peak', 'figures')
 
 # parse command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--participant_label', nargs='+')
+group = parser.add_mutually_exclusive_group()
+group.add_argument('--participant_label', nargs='+')
+group.add_argument('--participant_file',
+                   help='tsv file with code & group columns')
 args = parser.parse_args()
 
 # subjects to process - either specified or all
 if args.participant_label is not None:
     vhdr_files = [os.path.join(EDA_DIR, x.upper() + '.vhdr')
                   for x in args.participant_label]
+elif args.participant_file is not None:
+    participant_table = pandas.read_csv(args.participant_file, sep='\t')
+    vhdr_files = [os.path.join(EDA_DIR, x.upper() + '.vhdr')
+                  for x in participant_table.code]
 else:
     vhdr_files = glob.glob(os.path.join(EDA_DIR, '*.vhdr'))
 
@@ -182,14 +189,20 @@ target_fs = 25
 with open('utils/video_offsets.json') as f:
     video_offsets = json.load(f)
 
-# load group assignment
-group_table = pandas.read_csv(
-    filepath_or_buffer=os.path.join(BIDS_ROOT, 'participants.tsv'),
-    sep='\t',
-    usecols=['participant_id', 'group'],
-    converters={'participant_id': lambda s: s.split('-')[-1].upper()},
-    index_col='participant_id',
-)
+# load group assignment - either from given file or from bids participants.tsv
+if args.participant_file is not None:
+    group_table = (participant_table
+                   .rename(columns={'code': 'participant_id'})
+                   .set_index('participant_id')
+                   )
+else:
+    group_table = pandas.read_csv(
+        filepath_or_buffer=os.path.join(BIDS_ROOT, 'participants.tsv'),
+        sep='\t',
+        usecols=['participant_id', 'group'],
+        converters={'participant_id': lambda s: s.split('-')[-1]},
+        index_col='participant_id',
+    )
 
 # process files
 for hdr_file in vhdr_files:
@@ -198,7 +211,7 @@ for hdr_file in vhdr_files:
     code = os.path.splitext(os.path.basename(hdr_file))[0]
 
     # obtain subject group
-    group = group_table.loc[code].group
+    group = group_table.loc[code.capitalize()].group
 
     # load data & events
     eda, event_collection, fs = read_data(hdr_file)
