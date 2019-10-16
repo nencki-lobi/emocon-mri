@@ -87,7 +87,7 @@ def score_trials(list_of_trials, name):
         scores.append(
             {
                 'stimulus': '{} {}'.format(name, stimulus),
-                'trial': n,
+                'trial': n + 1,
                 'amplitude': amplitude,
             })
 
@@ -103,7 +103,7 @@ def score_trials(list_of_trials, name):
             scores.append(
                 {
                     'stimulus': '{} {}'.format(name, stimulus),
-                    'trial': n,
+                    'trial': n + 1,
                     'amplitude': amplitude
                 })
 
@@ -213,6 +213,12 @@ for hdr_file in vhdr_files:
     # obtain subject group
     group = group_table.loc[code.capitalize()].group
 
+    # skip subjects with technical issues
+    if code.capitalize() in ['Assyxo', 'Sbrgwt', 'Becund']:
+        print('Skipping subject', code, 'due to technical issues',
+              'during recording, which would render results meaningless')
+        continue
+
     # load data & events
     eda, event_collection, fs = read_data(hdr_file)
 
@@ -291,5 +297,7 @@ dataframes = [pandas.read_pickle(f) for f in subject_files]
 df_all = pandas.concat(dataframes, ignore_index=True)
 pickle_path = os.path.join(eda_scores_dir, 'all_scores.pickle')
 feather_path = os.path.join(eda_scores_dir, 'all_scores.feather')
+csv_path = os.path.join(eda_scores_dir, 'all_scores.csv')
 df_all.to_pickle(pickle_path)
 df_all.to_feather(feather_path)
+df_all.to_csv(csv_path)
