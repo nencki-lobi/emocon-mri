@@ -5,7 +5,9 @@ EDA_DIR = /Volumes/MyBookPro/emocon_mri/eda
 LOG_DIR = /Volumes/MyBookPro/emocon_mri/log
 BIDS_ROOT = /Volumes/MyBookPro/emocon_mri/emotional_contagion
 DERIV_DIR = /Volumes/MyBookPro/emocon_mri/derived
+QUESTIONNAIRE_DIR = /Volumes/MyBookPro/emocon_mri/questionnaire
 [SPM]
+ROOT = /Volumes/MyBookPro/emocon_mri/spm
 CONFOUNDS = /Volumes/MyBookPro/emocon_mri/spm/confounds
 [PHYSIO]
 EDA_DERIV_DIR = /Volumes/MyBookPro/emocon_mri/eda_derived
