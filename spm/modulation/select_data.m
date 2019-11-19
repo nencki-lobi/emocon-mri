@@ -72,12 +72,12 @@ for i = 1: height(selected)
         confounds = confounds(n_tr+1:end, :);
     end
     
-    % save (potentially trimmed) ofl events to new location
+    % save (potentially trimmed) ofl confounds to new location
     dlmwrite(...
         fullfile(new_confounds_dir, strcat(subject, '_ofl.txt')), ...
         confounds)
     
-    % for de, simply copy events to new location
+    % for de, simply copy confounds to new location
     copyfile(...
         fullfile(confounds_dir, strcat(subject, '_de.txt')), ...
         fullfile(new_confounds_dir, strcat(subject, '_de.txt')));
