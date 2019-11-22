@@ -18,7 +18,11 @@ eda.amplitude(isnan(eda.amplitude)) = 0;
 
 % create output directory
 out_dir = fullfile(spm_out_dir, 'modulation', 'events_pmod');
-[status, msg] = mkdir(out_dir);
+[~, ~] = mkdir(out_dir);
+
+% create output directory for events without pmod
+out_dir_nomod = fullfile(spm_out_dir, 'modulation', 'events_nomod');
+[status, msg] = mkdir(out_dir_nomod);
 
 TR = 2.87;
 
@@ -63,8 +67,13 @@ for i = 1:height(subject_table)
     pmod(2).param{1} = eda_q.amplitude';
     pmod(2).poly{1} = 1;
     
+    % write output
     out_file = fullfile(out_dir, sprintf('%s_%s.mat', subject, task));
     save(out_file, 'names', 'onsets', 'durations', 'pmod');
+    
+    % write output without pmod
+    out_file = fullfile(out_dir_nomod, sprintf('%s_%s.mat', subject, task));
+    save(out_file, 'names', 'onsets', 'durations');
     
     clearvars names onsets durations pmod;
 
@@ -147,6 +156,10 @@ for i = 1:height(subject_table)
     % write output
     out_file = fullfile(out_dir, sprintf('%s_%s.mat', subject, task));
     save(out_file, 'names', 'onsets', 'durations', 'pmod');
+    
+    % write output without pmod
+    out_file = fullfile(out_dir_nomod, sprintf('%s_%s.mat', subject, task));
+    save(out_file, 'names', 'onsets', 'durations');
     
     clearvars names onsets durations pmod;
 
