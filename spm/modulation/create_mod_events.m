@@ -24,6 +24,13 @@ out_dir = fullfile(spm_out_dir, 'modulation', 'events_pmod');
 out_dir_nomod = fullfile(spm_out_dir, 'modulation', 'events_nomod');
 [status, msg] = mkdir(out_dir_nomod);
 
+% create output directories for events with tmod (1st & 2nd order);
+out_dir_tmod_1st = fullfile(spm_out_dir, 'modulation', 'events_tmod1');
+out_dir_tmod_2nd = fullfile(spm_out_dir, 'modulation', 'events_tmod2');
+[~, ~] = mkdir(out_dir_tmod_1st);
+[~, ~] = mkdir(out_dir_tmod_2nd);
+
+
 TR = 2.87;
 
 %% Direct expression
@@ -67,15 +74,25 @@ for i = 1:height(subject_table)
     pmod(2).param{1} = eda_q.amplitude';
     pmod(2).poly{1} = 1;
     
-    % write output
+    % write output with pmod
     out_file = fullfile(out_dir, sprintf('%s_%s.mat', subject, task));
     save(out_file, 'names', 'onsets', 'durations', 'pmod');
     
-    % write output without pmod
+    % write output without modulation
     out_file = fullfile(out_dir_nomod, sprintf('%s_%s.mat', subject, task));
     save(out_file, 'names', 'onsets', 'durations');
     
-    clearvars names onsets durations pmod;
+    % create and write output with tmod (1st order)
+    tmod = {1, 1};
+    out_file = fullfile(out_dir_tmod_1st, sprintf('%s_%s.mat', subject, task));
+    save(out_file, 'names', 'onsets', 'durations', 'tmod');
+    
+    % create and write output with tmod (2nd order)
+    tmod = {2, 2};
+    out_file = fullfile(out_dir_tmod_2nd, sprintf('%s_%s.mat', subject, task));
+    save(out_file, 'names', 'onsets', 'durations', 'tmod');
+    
+    clearvars names onsets durations pmod tmod;
 
 end
 
@@ -161,6 +178,16 @@ for i = 1:height(subject_table)
     out_file = fullfile(out_dir_nomod, sprintf('%s_%s.mat', subject, task));
     save(out_file, 'names', 'onsets', 'durations');
     
-    clearvars names onsets durations pmod;
+    % create and write output with tmod (1st order)
+    tmod = {1, 1, 1, 1};
+    out_file = fullfile(out_dir_tmod_1st, sprintf('%s_%s.mat', subject, task));
+    save(out_file, 'names', 'onsets', 'durations', 'tmod');
+    
+    % create and write output with tmod (2nd order)
+    tmod = {2, 2, 2, 2};
+    out_file = fullfile(out_dir_tmod_2nd, sprintf('%s_%s.mat', subject, task));
+    save(out_file, 'names', 'onsets', 'durations', 'tmod');
+    
+    clearvars names onsets durations pmod tmod;
 
 end
