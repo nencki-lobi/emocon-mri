@@ -37,3 +37,22 @@ mask_amy.to_filename(str(outdir.joinpath('amy_bilateral.nii')))
 if args.plot:
     plotting.plot_roi(mask_amy)
     plt.show()
+
+
+# fetch cortical atlas
+dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+
+cort_labels = dataset.labels
+cort_atlas = image.load_img(dataset.maps)
+cort_atlas_data = cort_atlas.get_data()
+
+# create bilateral insula mask
+mask_data = np.zeros(atlas_data.shape, dtype=np.int32)
+mask_data[cort_atlas_data == cort_labels.index('Insular Cortex')] = 1
+
+mask_insula = image.new_img_like(atlas, mask_data)
+mask_insula.to_filename(str(outdir.joinpath('insula_bilateral.nii')))
+
+if args.plot:
+    plotting.plot_roi(mask_insula)
+    plt.show()
