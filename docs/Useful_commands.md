@@ -6,6 +6,11 @@ which were used for certain tasks.
 
 ### Ffmpeg - converting video
 
+Create a list of files for concat:
+```
+ls *MP4 | sed 's/^/file /' > mylist.txt
+```
+
 Join two .mp4 files:
 ```
 ffmpeg -f concat -i mylist.txt -c copy OUTPUT
