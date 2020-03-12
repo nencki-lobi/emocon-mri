@@ -18,18 +18,22 @@ outdir = Path(config['SPM']['ROOT']).joinpath('roi')
 if not outdir.is_dir():
     outdir.mkdir(parents=True)
 
-# fetch subcortical atlas
-dataset = datasets.fetch_atlas_harvard_oxford('sub-maxprob-thr25-2mm')
+# fetch subcortical atlas - probabilistic version
+dataset = datasets.fetch_atlas_harvard_oxford('sub-prob-2mm')
 atlas_filename = dataset.maps
 labels = dataset.labels
 
 atlas = image.load_img(atlas_filename)
-atlas_data = atlas.get_data()
+atlas_data = atlas.get_fdata()
 
 # create bilateral amygdala mask
-mask_data = np.zeros(atlas_data.shape, dtype=np.int32)
-mask_data[atlas_data == labels.index('Left Amygdala')] = 1
-mask_data[atlas_data == labels.index('Right Amygdala')] = 1
+mask_data = np.zeros(atlas_data.shape[:-1], dtype=np.int32)
+where_left = atlas_data[:, :, :, labels.index('Left Amygdala') - 1] > 70
+where_right = atlas_data[:, :, :, labels.index('Right Amygdala') - 1] > 70
+# thresholding at 70 % to match Lindstrom, Haaker & Olsson Neuroimage 2018
+# -1 because 'Background' label does not have a corresponding image
+mask_data[where_left] = 1
+mask_data[where_right] = 1
 
 mask_amy = image.new_img_like(atlas, mask_data)
 mask_amy.to_filename(str(outdir.joinpath('amy_bilateral.nii')))
@@ -47,10 +51,10 @@ cort_atlas = image.load_img(dataset.maps)
 cort_atlas_data = cort_atlas.get_data()
 
 # create bilateral insula mask
-mask_data = np.zeros(atlas_data.shape, dtype=np.int32)
+mask_data = np.zeros(cort_atlas_data.shape, dtype=np.int32)
 mask_data[cort_atlas_data == cort_labels.index('Insular Cortex')] = 1
 
-mask_insula = image.new_img_like(atlas, mask_data)
+mask_insula = image.new_img_like(cort_atlas, mask_data)
 mask_insula.to_filename(str(outdir.joinpath('insula_bilateral.nii')))
 
 if args.plot:
