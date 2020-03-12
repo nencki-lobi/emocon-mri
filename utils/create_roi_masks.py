@@ -56,3 +56,20 @@ mask_insula.to_filename(str(outdir.joinpath('insula_bilateral.nii')))
 if args.plot:
     plotting.plot_roi(mask_insula)
     plt.show()
+
+# fetch Destrieux atlas
+dataset = datasets.fetch_atlas_destrieux_2009()
+destrieux_labels = dataset.labels
+destrieux_atlas = image.load_img(dataset.maps)
+destrieux_atlas_data = destrieux_atlas.get_fdata()
+
+# create anterior insula mask from Destrieux atlas
+# this atlas keeps labels in numpy recarray and uses bytes literals
+arr_idx = np.where(destrieux_labels.name == b'R S_circular_insula_ant')[0][0]
+img_idx = destrieux_labels.index[arr_idx]
+
+mask_data = np.zeros(destrieux_atlas_data.shape)
+mask_data[destrieux_atlas_data == img_idx] = 1
+
+mask_ains = image.new_img_like(destrieux_atlas, mask_data)
+mask_ains.to_filename(str(outdir.joinpath('R_S_circular_insula_ant')))
