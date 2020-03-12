@@ -48,7 +48,7 @@ dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
 
 cort_labels = dataset.labels
 cort_atlas = image.load_img(dataset.maps)
-cort_atlas_data = cort_atlas.get_data()
+cort_atlas_data = cort_atlas.get_fdata()
 
 # create bilateral insula mask
 mask_data = np.zeros(cort_atlas_data.shape, dtype=np.int32)
@@ -72,8 +72,12 @@ destrieux_atlas_data = destrieux_atlas.get_fdata()
 arr_idx = np.where(destrieux_labels.name == b'R S_circular_insula_ant')[0][0]
 img_idx = destrieux_labels.index[arr_idx]
 
-mask_data = np.zeros(destrieux_atlas_data.shape)
+mask_data = np.zeros(destrieux_atlas_data.shape, dtype=np.int32)
 mask_data[destrieux_atlas_data == img_idx] = 1
 
 mask_ains = image.new_img_like(destrieux_atlas, mask_data)
 mask_ains.to_filename(str(outdir.joinpath('R_S_circular_insula_ant')))
+
+if args.plot:
+    plotting.plot_roi(mask_ains)
+    plt.show()
