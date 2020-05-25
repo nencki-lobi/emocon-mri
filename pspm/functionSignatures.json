@@ -1,0 +1,18 @@
+{
+    "_schemaVersion": "1.0.0",
+    "read_event_table":
+    {
+	"inputs":
+	[
+	    {"name":"file_path", "kind":"required", "type":"filepath"}
+	]
+    },
+    "check_markers":
+    {
+    "inputs":
+    [
+        {"name":"datafile", "kind":"required", "type":"filepath"},
+        {"name":"group", "kind":"required", "type":"string"}
+    ]
+    }
+}
