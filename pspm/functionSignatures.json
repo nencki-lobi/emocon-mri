@@ -14,5 +14,12 @@
         {"name":"datafile", "kind":"required", "type":"filepath"},
         {"name":"group", "kind":"required", "type":"string"}
     ]
+    },
+    "get_condition_info":
+    {
+    "inputs":
+    [
+        {"name":"events_file", "kind":"required", "type":"filepath"}
+    ]
     }
 }
