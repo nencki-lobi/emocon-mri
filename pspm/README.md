@@ -27,4 +27,8 @@ This part not complete
 
 ### Batch wrappers
 
-1. dcm_process_de takes subject label as argument and runs the same batch as dcm_batch_de - this is useful when running in noninteractive mode.
+1. dcm_process_* are functions which take subject label as argument and run an appropriate batch - this is useful when running in noninteractive mode.
+
+## Notes
+
+For running R scripts in terminal, use `Rscript` command.
