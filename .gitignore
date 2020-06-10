@@ -2,6 +2,8 @@
 config.ini
 EmoConEnv/
 
+*.Rstudio
+
 
 # Created by https://www.gitignore.io/api/osx,python
 # Edit at https://www.gitignore.io/?templates=osx,python
