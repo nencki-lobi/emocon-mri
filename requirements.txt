@@ -6,9 +6,10 @@ pydicom==1.2.2
 cvxopt==1.2.3
 mne==0.18.2
 matplotlib==3.1.1
+matplotlib-venn==0.11.5
 ipykernel
 pyarrow==0.14.1
 xlrd==1.2.0
-nilearn==0.5.2
+nilearn==0.6.2
 scikit-learn==0.21.3
 seaborn==0.10.0
