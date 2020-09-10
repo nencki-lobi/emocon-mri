@@ -1,5 +1,4 @@
 % Pooled CS+>CS- in DE (1 sample t-test)
-% script will be moved / edited etc
 
 my_config = ini2struct('../../../config.ini');
 analysis_dir = fullfile(my_config.spm.root, 'mot_out');

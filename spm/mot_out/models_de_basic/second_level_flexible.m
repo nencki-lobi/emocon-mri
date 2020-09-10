@@ -1,7 +1,7 @@
-% List of open inputs
-% Factorial design specification: Directory - cfg_files
-% Factorial design specification: Scans - cfg_files
-% Factorial design specification: Factor matrix - cfg_entry
+% Flexible factorial design with CS+ / CS- and friend / stranger
+%
+% Design matrix includes main effect of subject and interaction of
+% stimulus & group factors.
 
 my_config = ini2struct('../../../config.ini');
 analysis_dir = fullfile(my_config.spm.root, 'mot_out');
