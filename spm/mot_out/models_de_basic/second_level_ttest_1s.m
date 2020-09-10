@@ -1,7 +1,7 @@
 % Pooled CS+>CS- in DE (1 sample t-test)
 % script will be moved / edited etc
 
-my_config = ini2struct('../../config.ini');
+my_config = ini2struct('../../../config.ini');
 analysis_dir = fullfile(my_config.spm.root, 'mot_out');
 
 % select con files for CR (CS+ > CS-)
@@ -15,7 +15,7 @@ end
 
 % define output directory
 out_dir = cellstr(fullfile(...
-    analysis_dir, 'second_level', 'de_basic', 'CR_1sample'));
+    analysis_dir, 'second_level', 'de_basic', 'CR_1_sample'));
 
 jobs = {'second_level_ttest_1s_job.m'};
 inputs = cell(2, 1);

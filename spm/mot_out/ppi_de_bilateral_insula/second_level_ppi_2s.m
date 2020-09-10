@@ -6,7 +6,6 @@ my_config = ini2struct('../../../config.ini');
 
 spm_out_dir = my_config.spm.root;
 analysis_dir = fullfile(spm_out_dir, 'mot_out');
-ppi_dir = fullfile(analysis_dir, 'PPI_DE_AINSxUSDIFF');
 
 subject_table = readtable(fullfile(analysis_dir, 'participants.csv'), ...
     'TextType', 'string');
@@ -15,7 +14,7 @@ sub_stranger = subject_table(subject_table.group == "stranger", :).subject;
 
 out_dir = fullfile(spm_out_dir, ...
     'mot_out', 'second_level', 'ppi_de_insula', '2_sample');
-con_pat = fullfile(analysis_dir, 'PPI_DE_AINSxUSDIFF', 'sub-%s', 'con_0001.nii');
+con_pat = fullfile(analysis_dir, 'PPI_DE_AINSxCS', 'sub-%s', 'con_0001.nii');
 
 inputs = cell(3, 1);
 inputs{1, 1} = cellstr(out_dir); % Factorial design specification: Directory - cfg_files

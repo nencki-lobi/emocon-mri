@@ -33,9 +33,9 @@ for crun = 1:nrun
         analysis_dir, 'confounds', strcat(subject, '_de.mat')));
     ppi_file = fullfile(...
         analysis_dir, 'first_level_longevent', strcat(subject, '_de'), ...
-        'PPI_AINSxUSDIFF.mat');
+        'PPI_AINSxCS.mat');
     out_dir = cellstr(fullfile( ...
-        analysis_dir, 'PPI_DE_AINSxUSDIFF', strcat('sub-', subject)));
+        analysis_dir, 'PPI_DE_AINSxCS', strcat('sub-', subject)));
     
     bold_files = spm_select('expand', bold_path);
     

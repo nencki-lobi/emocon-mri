@@ -15,7 +15,7 @@ inputs = cell(5, nrun);
 % same for all subjects
 voi_mask = fullfile(roi_dir, 'anterior_insula.nii,1');
 contrast = [1, 1, 1; 2, 1, -1];  % CS+ - CS-
-ppi_name = 'AINSxUSDIFF';
+ppi_name = 'AINSxCS';
 
 for crun = 1:nrun
     model = fullfile(files(crun,1).folder, files(crun,1).name);
