@@ -38,6 +38,8 @@ for crun = 1:nrun
         analysis_dir, 'PPI_OFL_RTPJxUS', strcat('sub-', subject)));
     
     bold_files = spm_select('expand', bold_path); % apparently needed
+    bold_files = ...
+        bold_files(1 + subject_table.discard_volumes_ofl(crun):end, :);
     
     load(ppi_file)  % contains PPI variable
 
