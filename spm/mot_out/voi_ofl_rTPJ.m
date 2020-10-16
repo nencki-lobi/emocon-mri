@@ -34,5 +34,5 @@ for crun = 1:nrun
     inputs{4, crun} = contrast; % Physio/Psycho-Physiologic Interaction:  Input variables and contrast weights - cfg_entry
     inputs{5, crun} = ppi_name; % Physio/Psycho-Physiologic Interaction: Name of PPI - cfg_entry
 end
-% spm('defaults', 'FMRI');
-% spm_jobman('run', jobs, inputs{:});
+spm('defaults', 'FMRI');
+spm_jobman('run', jobs, inputs{:});
