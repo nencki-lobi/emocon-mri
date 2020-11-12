@@ -34,7 +34,7 @@ for crun = 1:nrun
         analysis_dir, 'first_level', strcat(subject, '_ofl'), ...
         'PPI_AINSxUSDIFF.mat');
     out_dir = cellstr(fullfile( ...
-        analysis_dir, 'PPI_AINSxUSDIFF', strcat('sub-', subject)));
+        analysis_dir, 'PPI_OFL_AINSxUS', strcat('sub-', subject)));
 
     bold = nifti(bold_path);
     frames = subject_table.discard_volumes_ofl(crun) + 1 : bold.dat.dim(4);
