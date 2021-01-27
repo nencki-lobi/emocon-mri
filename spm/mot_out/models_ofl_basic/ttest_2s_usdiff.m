@@ -1,4 +1,4 @@
-% Pooled CS+>CS- in DE (2 sample t-test: friend vs stranger)
+% US>noUS in DE (2 sample t-test: friend vs stranger)
 
 my_config = ini2struct('../../../config.ini');
 analysis_dir = fullfile(my_config.spm.root, 'mot_out');
