@@ -4,18 +4,6 @@ Emotional Contagion MRI study
 Setting up
 ------
 
-### Git
-
-Part of eda analysis was included as a [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules). After cloning this repo, run the following to fetch the submodule:
-```
-git submodule init
-git submodule update
-```
-Alternatively, cloning can be done with:
-```
-git clone --recurse-submodules
-```
-
 ### Python
 
 Create a virtual environment and then install packages using:
