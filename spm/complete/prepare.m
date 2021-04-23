@@ -35,10 +35,11 @@ end
 
 % Extract confounds for each subject & count motion outlier columns
 for n = 1:height(df)
-    label = df{n, 'label'};
+    label = df.label(n);
     
     df.confounds_ofl(n) = extract_confounds(...
-        sprintf(confounds_pattern, label, 'ofl'), 0);  % 0 is temporary
+        sprintf(confounds_pattern, label, 'ofl'), ...
+        df.discard_volumes_ofl(n));
     df.motion_ofl(n) = size(df.confounds_ofl(n).R, 2) - 6;
     
     df.confounds_de(n) = extract_confounds(...
