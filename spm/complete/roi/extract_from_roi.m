@@ -17,7 +17,7 @@ tbl_dir = fullfile(my_config.spm.root, "complete", "other");
 subject_table = readtable(fullfile(tbl_dir, "included_participants.csv"), ...
     'TextType', 'string');
 
-stats = subject_table(:, ["subject", "group"]);
+stats = subject_table(:, ["label", "group"]);
 
 stats.amygdala = summarise(...
     stats.label, fl_dir, "ofl", "con_0005.nii", ...
@@ -58,6 +58,11 @@ function result = summarise(subjects, first_level_dir, task, con, xY)
     %
     % result          - double array with ROI averages
 
+    if isstring(xY)
+        % spm expects struct or char but not string, so do string -> char
+        xY = char(xY);
+    end
+    
     file_list = char(...
         fullfile(first_level_dir, subjects + "_" + task, con));
     [result, ~] = spm_summarise(file_list, xY, @mean);
