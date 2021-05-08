@@ -24,6 +24,7 @@ This part not complete
 2. show_filtered - for quick preview of raw & filtered signal
 3. plot_us_responses
 4. check_markers, check_main_markers
+5. markers_coverage - can be used to screen for problems with scanner markers (which are used to trim data) - when the first and last one are closer or further apart then the task would suggest; further screening not included, but described in comments
 
 ### Batch wrappers
 
