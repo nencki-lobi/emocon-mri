@@ -1,9 +1,10 @@
 """Subject table maker
 
-We have two subject tables: BIDS participants file and excel with all
-questionnaires. While they could be organised better, we live in a mess and the
-purpose of this script is to merge information from both and output a nice
-table of participants which can be used in PsPM scripting.
+In theory, the big table with behavioral info could be used by
+subsequent scripts, but it is easier to do some wrangling first. This
+script extracts the label, group and contingency columns from the big
+table, selects the observers, and puts them in 'participants.csv' file
+in the pspm analysis directory.
 """
 
 import configparser
@@ -11,34 +12,20 @@ import os
 import pandas
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('../config.ini')
 qdir = config['DEFAULT']['QUESTIONNAIRE_DIR']
 
-df = pandas.read_excel(os.path.join(qdir, 'ANKIETY_fmri2019_odwrócone.xlsx'))
-
-"""Remove unnecessary rows
-The spreadsheet has subjects for whom the same video was reused ("actor"),
-as well as 2 participants who should be dropped:
-    TRLTDN - massive video playback issues
-    CGOTOP - video shown mirrored, replaced by ORTKLP
-We should also consider PLARRE, who also saw mirrored video, however he was not
-replaced.
-"""
-
-df = df[df['Wersja stranger'] != 'aktor']
-df = df[~df.Kod.isin(['TRLTDN1', 'CGOTOP1'])]
-df.reset_index(inplace=True, drop=True)
+df = pandas.read_csv(os.path.join(qdir, 'table.tsv'), sep='\t')
 
 # Take only observers i.e. MRI participants and useful columns
-obs = df.query('Rola == "OBS"').loc[:, ('Kod', 'Grupa', 'CONTINGENCY')]
+obs = df.query('role == "OBS"').loc[:, ('label', 'group', 'CONT_contingency')]
 
-# Make table content more sane
+# Rename contingency & convert to boolean
 obs.rename(
-    columns={'Kod': 'label', 'Grupa': 'group', 'CONTINGENCY': 'contingency'},
+    columns={'CONT_contingency': 'contingency'},
     inplace=True
     )
-obs.label = obs.label.str.capitalize().str.extract('(\D+)')  # \D = non-digit
-obs.contingency = obs.contingency.map({'TAK': True, 'NIE': False})
+obs.contingency = obs.contingency.map({'YES': True, 'NO': False})
 
 # save
 pspmdir = config['PSPM']['ROOT']
