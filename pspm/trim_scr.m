@@ -24,14 +24,16 @@ tab = readtable(fullfile(my_config.pspm.root, 'participants.csv'), ...
     'TextType', 'string');
 tab.label = upper(tab.label);
 
-% some subjects need to be handled manually due to marker inconsistencies
-problem = ["ZTLXHI", "GPTFWI", "YHSGXA", "DDPQRP", "XFPOLO", "RKRTYK"];
+% some subjects need to be handled manually or excluded due to marker
+% inconsistencies; see file markers_coverage.m for details
+manual = ["DDPQRP", "GPTFWI", "RKRTYK", "ZTLXHI"];
+excluded = ["YHSGXA", "XFPOLO"];
 
 for n = 1:height(tab)
     
     code = tab.label(n);
     
-    if ismember(code, problem)
+    if ismember(code, manual) || ismember(code, excluded)
         continue
     end
 
@@ -55,5 +57,41 @@ for n = 1:height(tab)
 
 end
 
-% TODO: for subjects with inconsistent markers, browse manually and trim by
-% time / pspm_trim(datafile, from, to, 'file')
+% for subjects with inconsistent markers, trim by time found by browsing
+% manually through the markers; pspm_trim(datafile, from, to, 'file')
+
+ofl_friend_sec = 1036;
+ofl_stranger_sec = 1088;
+de_sec = 525;
+
+trimmed_ofl = pspm_trim(cellstr(fullfile(work_dir, "pspm_DDPQRP.mat")), ...
+    19.716, 19.716 + ofl_stranger_sec, 'file');
+movefile(trimmed_ofl, strrep(trimmed_ofl, "DDPQRP.mat", "DDPQRP_ofl.mat"));
+
+trimmed_de = pspm_trim(cellstr(fullfile(work_dir, "pspm_DDPQRP.mat")), ...
+    1250.7, 1250.7 + de_sec, 'file');
+movefile(trimmed_de, strrep(trimmed_de, "DDPQRP.mat", "DDPQRP_de.mat"));
+
+trimmed_ofl = pspm_trim(cellstr(fullfile(work_dir, "pspm_GPTFWI.mat")), ...
+    4.116, 4.116 + ofl_stranger_sec, 'file');
+movefile(trimmed_ofl, strrep(trimmed_ofl, "GPTFWI.mat", "GPTFWI_ofl.mat"));
+
+trimmed_de = pspm_trim(cellstr(fullfile(work_dir, "pspm_GPTFWI.mat")), ...
+    1199.932, 1199.932 + de_sec, 'file');
+movefile(trimmed_de, strrep(trimmed_de, "GPTFWI.mat", "GPTFWI_de.mat"));
+
+trimmed_ofl = pspm_trim(cellstr(fullfile(work_dir, "pspm_RKRTYK.mat")), ...
+    20.432, 20.432 + ofl_stranger_sec, 'file');
+movefile(trimmed_ofl, strrep(trimmed_ofl, "RKRTYK.mat", "RKRTYK_ofl.mat"));
+
+trimmed_de = pspm_trim(cellstr(fullfile(work_dir, "pspm_RKRTYK.mat")), ...
+    1222.516, 1222.516 + de_sec, 'file');
+movefile(trimmed_de, strrep(trimmed_de, "RKRTYK.mat", "RKRTYK_de.mat"));
+
+trimmed_ofl = pspm_trim(cellstr(fullfile(work_dir, "pspm_ZTLXHI.mat")), ...
+    45.088, 45.088 + ofl_friend_sec, 'file');
+movefile(trimmed_ofl, strrep(trimmed_ofl, "ZTLXHI.mat", "ZTLXHI_ofl.mat"));
+
+trimmed_de = pspm_trim(cellstr(fullfile(work_dir, "pspm_ZTLXHI.mat")), ...
+    1397.644, 1397.644 + de_sec, 'file');
+movefile(trimmed_de, strrep(trimmed_de, "ZTLXHI.mat", "ZTLXHI_de.mat"));
