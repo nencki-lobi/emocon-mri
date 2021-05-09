@@ -12,6 +12,11 @@ pspm_root = my_config.pspm.root;
 tab = readtable(fullfile(my_config.pspm.root, 'participants.csv'), ...
     'TextType', 'string');
 
+% create output directory if not already present
+if ~ isfolder(fullfile(pspm_root, 'events_scr_dcm'))
+    mkdir(pspm_root, 'events_scr_dcm')
+end
+
 % Stimulus Onset Asynchrony: US was always 7.5 s after CS
 SOA = 7.5;
 

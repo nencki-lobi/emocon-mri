@@ -31,4 +31,6 @@ obs.contingency = obs.contingency.map({'YES': True, 'NO': False})
 pspmdir = config['PSPM']['ROOT']
 if not os.path.exists(pspmdir):
     os.mkdir(pspmdir)
-obs.to_csv(os.path.join(pspmdir, 'participants.csv'), index=False)
+out_path = os.path.join(pspmdir, 'participants.csv')
+obs.to_csv(out_path, index=False)
+print('Written', out_path)

@@ -4,7 +4,7 @@ This folder contains scripts for PsPM analysis. Currently work in progress.
 
 ## Core scripts:
 
-1. make_subjects_table.py: combines information from BIDS participants table and questionnaires table for easy access to participant info (code, contingency)
+1. make_subjects_table.py: extract information from questionnaires table for easy access to participant info (label, group, contingency)
 2. import_scr.m handles data import
 3. trim_scr.m handles data trimming (trims to match beginning with MR)
 4. create_events_scr_dcm.m creates event files for scr dcm

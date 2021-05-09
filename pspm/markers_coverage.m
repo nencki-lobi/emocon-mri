@@ -74,7 +74,7 @@ tbl.deSec = round(tbl.deDuration);
 % mismatch between task length and scanner pulse coverage:
 %
 % OFL:
-% Gptfwi: "1" marker missing, but scanner pulses are all legit
+% Gptfwi: "1" & "14" markers missing, but scanner pulses are all legit
 % Yhsgxa: beginning of OFL seems to be cut off - safest to discard data
 % Xfpolo: "64" markers are all over the place - safest to discard data
 % Rkrtyk: Two opening "64" markers should go out, all other seem legit
