@@ -36,7 +36,8 @@ This part not complete
 Example GNU parallel call:
 
 ```
-parallel --dry-run -a <pspm_root>/to_call.txt 'matlab -nodisplay -singleCompThread -batch {}' > /dev/null
+parallel -a <pspm_root>/to_call.txt --jobs 8
+    'matlab -nodisplay -singleCompThread -batch {}' > /dev/null
 ``` 
 
 where  `<pspm_root>/to_call.txt` contains function calls in subsequent rows:
