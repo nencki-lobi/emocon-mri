@@ -18,7 +18,7 @@ if ~isfolder(out_dir)
 end
 
 nrun = length(listing); % enter the number of runs here
-jobfile = {'/Users/michal/Documents/emocon_mri_study/pspm/dcm_batch_export_job.m'};
+jobfile = {'dcm_batch_export_job.m'};
 jobs = repmat(jobfile, 1, nrun);
 inputs = cell(2, nrun);
 
@@ -27,6 +27,9 @@ for crun = 1:nrun
         fullfile(listing(crun).folder, listing(crun).name)); % Export Statistics: Model File(s) - cfg_files
     inputs{2, crun} = fullfile(out_dir, strrep(listing(crun).name, '.mat', '.tsv')); % Export Statistics: Filename - cfg_entry
 end
+
+pspm_init;
+
 job_id = cfg_util('initjob', jobs);
 sts    = cfg_util('filljob', job_id, inputs{:});
 if sts
