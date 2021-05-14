@@ -1,0 +1,169 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.11.1
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+output: 
+  html_document:
+    theme: spacelab
+---
+
+# Questionnaires
+
+This analysis compares the results of STAI and SWE questionnaires between friend and stranger groups.
+
+```{r, message=FALSE}
+library('tidyverse')
+library('afex')
+library('emmeans')
+library('BayesFactor')
+library('ggpubr')
+library('ini')
+```
+
+
+We are working with the following files:
+```{r}
+config <- read.ini("../config.ini")
+tab_file <- file.path(config$DEFAULT$QUESTIONNAIRE_DIR, 'table.tsv')
+```
+
+The analysis is based on the observers included in the MRI sample:
+
+```{r}
+df <- read_tsv(tab_file, col_types=cols())
+```
+
+```{r}
+df <- df %>%
+    filter(role == "OBS") %>%             # observers only
+    filter(CONT_contingency == "YES") %>% # contingency knowing only
+    filter(label != "Nagery")             # included in MRI only
+```
+
+## State anxiety
+
+Data preparation & wide-format export for JASP:
+
+```{r}
+state_anxiety <- df %>% 
+    select(c("label", "group", starts_with("STAI_state"))) %>%
+    pivot_longer(starts_with("STAI_state"), names_to = "measurement") %>%
+    mutate(
+        measurement = recode_factor(measurement, 
+                                    "STAI_state1_total" = "before", 
+                                    "STAI_state2_total" = "after"),
+        group = as_factor(group)
+        )
+```
+
+```{r}
+# temporarily write wide-format for jasp
+if (!dir.exists("tmp_outputs")) { dir.create("tmp_outputs") }
+df %>% 
+    select(c("label", "group", starts_with("STAI_state"))) %>%
+    write_tsv('tmp_outputs/state_anxiety_ctg.tsv')
+```
+
+### Classical ANOVA
+
+```{r tags=c()}
+a_state_anxiety <- aov_ez(
+    id = "label", 
+    dv = "value",
+    data = state_anxiety,
+    between = "group",
+    within = "measurement"
+)
+
+a_state_anxiety
+```
+
+### Bayesian anova
+Performed separately in JASP. Couldn't figure out how to do it in BayesFactor.
+
+
+## STAI Trait
+
+```{r}
+trait_anxiety <- df %>%
+    select(c("label", "group", "STAI_trait_total"))
+```
+
+```{r}
+t.test(STAI_trait_total ~ group, trait_anxiety)
+ttestBF(data = trait_anxiety, formula = STAI_trait_total ~ group)
+```
+
+## Skala Wrażliwości Empatycznej
+
+```{r}
+empathy <- df %>% 
+    select(c("label", "group", starts_with("SWE")))
+```
+
+### empathic concern
+
+```{r}
+t.test(SWE_empathic_concern ~ group, empathy)
+ttestBF(formula = SWE_empathic_concern ~ group, data = empathy)
+```
+
+### personal distress
+
+```{r}
+t.test(SWE_personal_distress ~ group, empathy)
+ttestBF(formula = SWE_personal_distress ~ group, data = empathy)
+```
+
+### perspective taking
+
+```{r}
+t.test(SWE_perspective_taking ~ group, empathy)
+ttestBF(formula = SWE_perspective_taking ~ group, data = empathy)
+```
+
+# Appendix: additional plots & stats
+
+## State Anxiety
+
+Paired plot:
+
+```{r}
+state_anxiety_plot <- ggpaired(state_anxiety, x = "measurement", y = "value", id = "label", facet.by = "group")
+
+if(!dir.exists("figures")) { dir.create("figures") }
+ggexport(state_anxiety_plot, filename = 'figures/state_anxiety.png')
+state_anxiety_plot
+```
+
+Simple contrasts (within measurement or group) with uncorrected p-values:
+
+```{r}
+rbind(
+    pairs(emmeans(a_state_anxiety, ~group|measurement)),
+    pairs(emmeans(a_state_anxiety, ~measurement|group)),
+    adjust = "none"
+)
+```
+
+## "Trait" questionnaires combined
+
+```{r}
+traits_plot <- df %>% 
+    select(c("label", "group", starts_with("SWE"), "STAI_trait_total")) %>%
+    pivot_longer(starts_with(c("SWE", "STAI")), names_to = "scale.name") %>%
+    mutate(
+        scale.name = str_replace_all(scale.name, "_", " "),
+    ) %>%
+    ggboxplot(x = "group", y = "value", facet.by = "scale.name", add = "jitter", nrow=1)
+ggexport(traits_plot, filename = "figures/stai_trait_and_swe.png")
+traits_plot
+```

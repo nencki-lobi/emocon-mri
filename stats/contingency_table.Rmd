@@ -1,0 +1,99 @@
+---
+output:
+  html_document:
+    theme: spacelab
+---
+
+# Contingency knowledge
+
+```{r, message=FALSE}
+library('tidyverse')
+library('eulerr')
+library('ggpubr')
+library('ini')
+```
+
+This analysis formally compares contingency knowledge between friend and strangers group,
+using a contingency table / chi-squared test.
+
+```{r}
+config <- read.ini("../config.ini")
+
+tab_file <- file.path(config$DEFAULT$QUESTIONNAIRE_DIR, 'table.tsv')
+df <- read_tsv(tab_file, col_types=cols())
+figures_dir <- 'figures'  # store figures next to code
+```
+
+## Overall analysis (friend vs stranger group)
+### Create a contingency table
+
+```{r}
+x <- df %>%
+    filter(role=="OBS") %>%
+    select(c("label", "group", "CONT_contingency")) %>%
+    drop_na()
+
+ct <- x %>%
+    count(group, CONT_contingency) %>%
+    pivot_wider(names_from = CONT_contingency, values_from = n) %>%
+    column_to_rownames("group") %>%
+    rename(aware = YES, nonaware = NO) %>%
+    relocate(aware, .before = nonaware)
+	
+ct
+```
+
+### Perform a chi-squared test
+Use the basic formulation, without Yates' continuity correction.
+
+```{r}
+chisq.test(ct, correct=FALSE)
+```
+
+## Additional analysis, with by-demonstrator matching
+
+### Subset and pivot
+We can now treat the demonstrator id as the id column, and for each demonstrator obtain outcome from friend & stranger:
+
+```{r}
+x <- df %>%
+    filter(role=="OBS") %>%
+    select(c("group", "demonstrator_id", "CONT_contingency")) %>%
+    pivot_wider(names_from = group, values_from = "CONT_contingency") %>%
+    drop_na() %>%                      # remove those not seen by strangers
+    mutate(
+        stranger = stranger == "YES",  # converts to boolean
+        friend = friend == "YES",      # converts to boolean
+    )
+```
+
+### Count demonstrators correctly identified by both / either / none
+```{r}
+outcomes <- x %>%
+    count(friend, stranger) %>%
+    mutate(
+        outcome = case_when(
+            friend & stranger ~ "Both",
+            friend & !stranger ~ "Friend only",
+            !friend & stranger ~ "Stranger only",
+            TRUE ~ "Neither",
+            )
+        ) %>%
+    select(outcome, n)
+outcomes
+```
+
+### Portray that as an Euler plot
+The data may be too simple for that, but I couldn't resist.
+
+```{r}
+fit <- x %>%
+    select(c("friend", "stranger")) %>%
+    euler()
+
+p <- plot(fit, quantities=TRUE, legend=TRUE)
+
+if(!dir.exists(figures_dir)) {dir.create(figures_dir)}
+ggexport(p, filename = file.path(figures_dir, "euler.png"))
+p
+```

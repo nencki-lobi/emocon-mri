@@ -1,0 +1,85 @@
+---
+output:
+  html_document:
+    theme: spacelab
+---
+
+# Evaluation of the demonstrator and the observational US
+
+This analysis compares the evaluation of the demonstrator between friend and stranger groups.
+
+```{r, message=FALSE}
+library('tidyverse')
+library('ggpubr')
+library('psych')
+library('ini')
+```
+
+We are working with the following files
+```{r}
+config <- read.ini("../config.ini")
+tab_file <- file.path(config$DEFAULT$QUESTIONNAIRE_DIR, 'table.tsv')
+```
+
+The analysis is based on the subjects included in the MRI sample:
+
+```{r}
+df_ca <- read_tsv(tab_file, col_types=cols()) %>%
+    select(
+        c('subject_id', 'label', 'role', 'group', 'demonstrator_id',
+          'CONT_contingency', starts_with('ED'))
+    ) %>%
+    filter(role == "OBS") %>%
+    filter(CONT_contingency == "YES" & label != "Nagery")  # matches MRI
+```
+
+Each of the four scales will be compared using the Wilcoxon-Mann-Whitney test implemented in the standard `stats` library.
+
+How much discomfort did the demonstrator experience:
+```{r, warning=FALSE}
+wilcox.test(ED_discomfort ~ group, df_ca)
+```
+
+How expressive was the demonstrator:
+```{r, warning=FALSE}
+wilcox.test(ED_expressive ~ group, df_ca)
+```
+
+How natural were their reactions:
+```{r, warning=FALSE}
+wilcox.test(ED_natural ~ group, df_ca)
+```
+
+How much empathy did the observer feel:
+```{r, warning=FALSE}
+wilcox.test(ED_empathy ~ group, df_ca)
+```
+
+Additionally, the ratings can be plotted:
+
+```{r, warning=FALSE}
+ed_plot <- df_ca %>%
+    select(c("group", starts_with("ED"))) %>%
+    pivot_longer(cols = starts_with("ED")) %>% # creates name, value
+    mutate(
+        name = str_replace(name, "ED_", "")
+    ) %>%
+    ggboxplot(x = "group", y = "value", facet.by = "name", add = "jitter") %>%
+    ggpar(yticks.by = 1)
+
+if(!dir.exists("figures")) {
+    dir.create("figures")
+}
+
+ggexport(ed_plot, filename = "figures/evaluation_of_demonstrator.png")
+ed_plot
+```
+
+Summary statistics for the ratings, calculated using `describeBy` from the `psych` package:
+
+```{r, warning=FALSE}
+dsg <- df_ca %>%
+    select(c("group", where(is.numeric))) %>%
+    describeBy("group", IQR=TRUE)
+dsg
+```

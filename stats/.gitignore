@@ -1,0 +1,6 @@
+# Ignore exports from rmarkdown (in this directory)
+*.html
+
+# Also ignore directory with figures & temporary outputs (kept next to code)
+figures/
+tmp_outputs/

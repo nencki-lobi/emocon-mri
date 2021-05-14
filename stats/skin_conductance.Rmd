@@ -1,0 +1,195 @@
+---
+output:
+  html_document:
+    theme: spacelab
+---
+
+# Skin conductance
+
+This analysis contains statistical tests for the skin conductance response amplitudes produced by PsPM.
+
+```{r, message=FALSE}
+library('tidyverse')
+library('ggpubr')
+library('afex')
+library('emmeans')
+library('ini')
+```
+
+```{r}
+config <- read.ini("../config.ini")
+
+pspm_root <- config$PSPM$ROOT
+tmp_outputs <- "tmp_outputs"
+fig_dir <- "figures"
+
+if(!dir.exists(tmp_outputs)) {dir.create(tmp_outputs)}
+if(!dir.exists(fig_dir)) {dir.create(fig_dir)}
+```
+
+The tables contain only contingency-aware subjects, so there is no need to filter based on that
+
+```{r}
+df_ofl <- read_tsv(file.path(pspm_root, 'all_ofl.tsv'), col_types = cols())
+df_de <- read_tsv(file.path(pspm_root, 'all_de.tsv'), col_types = cols())
+```
+
+Display the number of subjects per group
+
+```{r}
+df_ofl %>%
+    group_by(group) %>%
+    summarise( count = n_distinct(subject) )
+```
+
+## OFL
+
+
+Average trials within subjects. Note that PsPM treats all trials equally during estimation, so each kind of trial contains two responses: flexible response #1 (CS) and fixed response #1 (US, be it present or absent). We are interested in the latter.
+
+```{r}
+ws_avg_ofl <- df_ofl %>%
+    filter(trialinfo == 'Fixed response # 1') %>%  # US response
+    group_by(subject, stimulus, group) %>%
+    summarise(m_amplitude = mean(amplitude, na.rm=TRUE)) %>%
+    ungroup()
+```
+
+With fixed responses selected, we want to compare CS+ reinforced to CS+ nonreinforced trials (ie. US to noUS).
+
+```{r}
+ofl_anova_data <- ws_avg_ofl %>%
+    filter(str_starts(stimulus, "CS plus")) %>%  # be it reinforced or not
+    mutate(across(where(is_character), as_factor)) # explicit conversion to factor
+```
+
+Run the classical anova and view the results
+
+```{r}
+anova_ofl <- aov_ez(
+    id = "subject",
+    dv = "m_amplitude",
+    data = ofl_anova_data,
+    between = "group",
+    within = "stimulus",
+)
+```
+
+```{r}
+anova_ofl
+```
+
+```{r}
+pairs(emmeans(anova_ofl, ~ stimulus), reverse = TRUE)
+```
+
+Note: the above call to emmeans produces results equivalent to `t.test(m_amplitude ~ stimulus, ofl_anova_data, paired = TRUE)`
+
+```{r}
+plot_ofl <- afex_plot(
+    object = anova_ofl,
+    x = "stimulus",
+    trace = "group",
+    data_plot = FALSE,  # FALSE
+    factor_levels=list(
+        stimulus=c(CS.plus.reinforced = 'US', CS.plus.nonreinforced = 'noUS')),
+    ) + labs(y = "amplitude (arb. unit)") + ggpubr::theme_pubr()
+
+plot_ofl
+```
+
+Note: a comment on error bars can be found in the [Afex plot documentation](https://cran.r-project.org/web/packages/afex/vignettes/afex_plot_introduction.html#error-bars-for-mixed-models). Most notably:
+
+> In sum, using error bars for performing “inference by eye” - that is, using overlap or non-overlap of error bars to judge which means differ or do not differ from each other - is highly problematic for mixed models, due to the potentially complex dependency structures between the means. It would be best to avoid comparisons between means altogether. Instead, it is perhaps a good idea to plot the model-based error bars (which is the default) and use them for their intended purpose; judging which values of the estimated means are likely given what we have learned from the model (however, note that one cannot interpret a 95% confidence interval as having a 95% probability of containing the population mean).
+
+
+## DE
+
+
+Again, start by averaging trials within subject. This time we are looking at the "flexible" response, ie. the response to the CS; during direct-expression this is the only response in a trial.
+
+```{r}
+ws_avg_de <- df_de %>%
+    group_by(subject, group, stimulus) %>%
+    summarise(m_amplitude = mean(amplitude, na.rm = TRUE)) %>%
+    ungroup()
+```
+
+For DE there are two trial types (CS+ & CS-) so no need to filter, just convert text to factors explicitly.
+
+```{r}
+de_anova_data <- ws_avg_de %>%
+    mutate(across(where(is_character), as_factor))
+```
+
+Run the anova and display the results
+
+```{r}
+anova_de <- aov_ez(
+    data = de_anova_data,
+    id = "subject",
+    dv = "m_amplitude",
+    within = "stimulus",
+    between = "group"
+    )
+```
+
+```{r}
+anova_de
+```
+
+```{r}
+summary(anova_de)
+```
+
+```{r}
+pairs(emmeans(anova_de, ~ stimulus), reverse = TRUE)
+```
+
+As a side note, even though there is no effect of group or interaction, only one group shows "significant" effects in post-hoc pairwise comparisons:
+
+```{r}
+pairs(emmeans(anova_de, ~ stimulus | group), reverse = TRUE)
+```
+
+```{r}
+plot_de <- afex_plot(
+    object = anova_de,
+    x = "stimulus",
+    trace = "group",
+    data_plot = FALSE,
+    factor_levels = list(
+        stimulus = c(CS.plus = "CS+", CS.minus = "CS-"))
+    ) +
+    labs(y = "amplitude (arb. unit)") +
+    ggpubr::theme_pubr()
+
+
+plot_de
+```
+
+## Data export
+
+
+Create a wide format table expected by JASP (it is easier to run bayesian anovas there). Stimulus names are different for the two tasks, so the tibbles can be joined without any further changes.
+
+```{r}
+ofl_jasp_data <- ofl_anova_data %>%
+    pivot_wider(names_from = stimulus, values_from = m_amplitude)
+de_jasp_data <- de_anova_data %>% 
+    pivot_wider(names_from = stimulus, values_from = m_amplitude)
+
+jasp_data <- full_join(ofl_jasp_data, de_jasp_data,
+                       by = c("subject", "group"))
+
+write_tsv(jasp_data, file.path(tmp_outputs, "skin_conductance.tsv"))
+```
+
+
+## Combined plot
+
+```{r}
+scr_plot <- ggarrange(plot_ofl, plot_de, common.legend = TRUE, labels = "AUTO")
+ggexport(scr_plot, filename = file.path(fig_dir, "scr_anova.png"))
+scr_plot
+```
