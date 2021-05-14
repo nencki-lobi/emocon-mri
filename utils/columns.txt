@@ -1,0 +1,42 @@
+[General information]
+subject_id: subject id
+label: pair / participant label, as used in mri and physio data (subject id sans the suffix)
+role: participant role; DEM/OBS
+group: group; stranger/friend
+age: age (in years)
+demonstrator_id: id of the demonstrator, either live (friend) or replay (stranger)
+cs_version: color assigned to CS+; 1=blue, 2=yellow
+
+[Friendship status - from recruitment]
+MFQ_ra: McGill Friendship Questionnaire - Respondent's Affection, total score
+friendship_length: friendship length, in years
+contact_frequency: contact frequency
+
+[STAI - State and Trait Anxiety]
+STAI_state1_total: total score in the STAI state questionnaire, before task
+STAI_state2_total: total score in the STAI state questionnaire, after task
+STAI_trait_total: total score in the STAI trait questionnaire
+
+[ED - evaluation of the domonstrator and the observational US; scale 0 - 9]
+ED_discomfort: how much discomfort the demonstrator appeared to experience
+ED_expressive: how expressive were the demonstrator's reactions to stimulation
+ED_natural: how natural were the demonstrator's reactions
+ED_empathy: how much empathy did the observer feel for the demonstrator
+ED_identify_with: how much did the observer identify with their friend (friend group only)
+
+[CONT - contingency knowledge, refers to observation stage]
+CONT_could_predict_shock: whether the observer was able to predict electrical stimulation; YES/NO
+CONT_how: what was the apparent rule for stimulation (if YES to previous, open answer in Polish)
+CONT_pct_blue: percentage of blue CS paired with electrical stimulation (range)
+CONT_pct_yellow: percentage of yellow CS paired with electrical stimulation (range)
+CONT_pct_fix: percentage of fixation symbols paired with electrical stimulation (range)
+CONT_color_choice_correct: whether forced choice answer (blue, yellow or fix) was correct; YES/NO
+CONT_at_what_stage: at what stage of the observation (beginning to end) the pairing became predictable; 1 - 5
+CONT_what_was_first: for stimulus pairings, which event occurred first; symbol/shock
+CONT_shock_pleasant: how pleasant or unpleasant was the stimulation; 1 - 5
+CONT_contingency: contingency knowledge outcome; YES/NO
+
+[SWE - Empathic Sensitiveness Scale (Skala Wrażliwości Empatycznej)]
+SWE_empathic_concern - total score in the empathic concern subscale
+SWE_personal_distress - total score in the personal distress subscale
+SWE_perspective taking - total score in the perspective taking subscale
