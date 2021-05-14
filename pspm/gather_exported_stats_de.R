@@ -7,7 +7,7 @@ load_subject <- function(f) {
 
   label = str_extract(basename(f), "sub-[A-Za-z]+")
 
-  tab = read_tsv(f, skip=1) %>%
+  tab = read_tsv(f, skip=1, col_types = cols()) %>%
     rename_with(paste, !matches("[0-9]$"), '0', sep="_") # numbers will autogenerate, add _0 to 1st
 
   # specify column order - for stacking (but redundant if we want long form...)
@@ -20,7 +20,7 @@ load_subject <- function(f) {
   return(reordered)
 }
 
-config <- read.ini('/Users/michal/Documents/emocon_mri_study/config.ini')
+config <- read.ini('../config.ini')
 
 # read exported files (wide-format) and put them together
 files <- list.files(

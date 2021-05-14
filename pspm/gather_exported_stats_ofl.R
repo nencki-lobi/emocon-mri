@@ -4,7 +4,7 @@
 library(tidyverse)
 library(ini)
 
-config <- read.ini('/Users/michal/Documents/emocon_mri_study/config.ini')
+config <- read.ini('../config.ini')
 
 # Load participant group / contingency info & join into the wide dataframe
 participants <- read_csv(file.path(config$PSPM$ROOT, 'participants.csv')) %>%
@@ -26,7 +26,7 @@ for (n in 1:length(files)) {
   sub_name <- str_extract(basename(f), "sub-[A-Za-z]+")
   sub_info <- participants %>% filter(subject==sub_name)
 
-  df <- read_tsv(f, skip=1) %>%
+  df <- read_tsv(f, skip=1, col_types = cols()) %>%
     rename_with(paste, !matches("[0-9]$"), '0', sep="_") %>%
     mutate(
       X193 = NULL,
