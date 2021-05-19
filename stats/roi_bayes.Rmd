@@ -28,7 +28,7 @@ The following regions have been selected:
 - Right posterior Superior Temporal Sulcus (rpSTS)
 - Right temporo-parietal junction (rTPJ).
 
-All ROIs, with the exception of amygdala, were based on Neurovault collection [Computing the Social Brain Connectome Across Systems and States](https://neurovault.org/collections/2462/) and a corresponding [article](https://academic.oup.com/cercor/article/28/7/2207/3831104) with the same title. The amygdala seed was based on the Harvard - Oxford atlas, thresholded at 70 % to match the definition used in the article [A common neural network differentially mediates direct and social fear learning](https://doi.org/10.1016/j.neuroimage.2017.11.039).
+All ROIs were based on Neurovault collection [Computing the Social Brain Connectome Across Systems and States](https://neurovault.org/collections/2462/) and a corresponding [article](https://academic.oup.com/cercor/article/28/7/2207/3831104) with the same title. The AI, amygdala and FFA ROIs from both hemispheres were merged (ie. parameters estimates were averaged over voxels from left and right hemisphere), while lateralised definitions were used for rpSTS and rTPJ, and there was only one, non-lateralised, aMCC seed in the collection.
 
 For each region, groups (friend vs stranger) are compared using `t.test` from built-in `stats` and `ttestBF` from `BayesFactor`.
 
