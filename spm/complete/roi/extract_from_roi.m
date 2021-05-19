@@ -3,7 +3,7 @@
 % Extracts ROI statistics (average parameter estimates from con files).
 % Requires first level models to be estimated, and ROI definitions to be
 % available. The ROI definitions are created by prepare_roi.m (in this
-% folder) and by utils/create_roi_masks.py.
+% folder).
 %
 % Creates two csv files (one per task), which can be analysed in R.
 
@@ -28,7 +28,7 @@ for n = 1:length(inputs)
     
     stats.amygdala = summarise(...
         stats.label, fl_dir, inputs(n).task, inputs(n).con, ...
-        fullfile(roi_dir, "amy_bilateral.nii"));
+        fullfile(roi_dir, "merged_seed_amygdala_vox200.nii"));
     stats.AI = summarise(...
         stats.label, fl_dir, inputs(n).task, inputs(n).con, ...
         fullfile(roi_dir, "merged_seed_AI_vox200.nii"));

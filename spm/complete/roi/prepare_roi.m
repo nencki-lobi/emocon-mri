@@ -17,15 +17,17 @@
 %   right FFA:  https://identifiers.org/neurovault.image:45327
 %   right pSTS: https://identifiers.org/neurovault.image:45337
 %   right TPJ:  https://identifiers.org/neurovault.image:45335
+%   left amy:   https://identifiers.org/neurovault.image:45320
+%   right amy:  https://identifiers.org/neurovault.image:45336
 %
-% The seeds for AI and the seeds for pSTS are combined to form a single
+% The seeds for AI, amygdala and fusiform are combined to form a single
 % ROI per structure (bilateral) using spm_imcalc.
 %
-% Some ROIs are not created in this script. The regional definition for
-% Amygdala is taken from the harvard - Oxford atlas; it is created by the
-% script in utils/create_roi_masks.py. An alternative definition of ACC 
-% (more extensive, used for PPI but not ROI analysis) was obtained from
-% Björn R Lindström.
+% Some ROIs (used in other analyses) are not created in this script. An
+% alternative definition of AI (more extensive, used for PPI) was obtained
+% from Björn R. Lindström. An alternative defintion of Amygdala (slightly
+% more extensive), taken from the Harvard - Oxford atlas, is created by the
+% script in utils/create_roi_masks.py.
 
 my_config = ini2struct('../../../config.ini');
 
@@ -45,6 +47,8 @@ file_names = [
     "seed_rFFA_vox200.nii";
     "seed_rpSTS_vox200.nii";
     "seed_rTPJ_vox200.nii";
+    "seed_lamygdala_vox200.nii";
+    "seed_ramygdala_vox200.nii"
     ];
 
 % If files are missing, download them from Neurovault (collection_id 2462)
@@ -77,4 +81,16 @@ if ~ isfile(merged_ffa)
         fullfile(roi_dir, 'seed_rFFA_vox200.nii');
         ];
     vo = spm_imcalc(vi, merged_ffa, 'i1 + i2');
+end
+
+% Merge the amygdalae using imcalc
+
+merged_amygdala = fullfile(roi_dir, 'merged_seed_amygdala_vox200.nii');
+
+if ~ isfile(merged_amygdala)
+    vi = [
+        fullfile(roi_dir, 'seed_lamygdala_vox200.nii');
+        fullfile(roi_dir, 'seed_ramygdala_vox200.nii');
+        ];
+    vo = spm_imcalc(vi, merged_amygdala, 'i1 + i2');
 end
