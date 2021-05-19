@@ -64,8 +64,10 @@ ed_plot <- df_ca %>%
     mutate(
         name = str_replace(name, "ED_", "")
     ) %>%
-    ggboxplot(x = "group", y = "value", facet.by = "name", add = "jitter") %>%
-    ggpar(yticks.by = 1)
+    ggdotplot(x = "group", y = "value", facet.by = "name", color = "group",
+              dotsize = 0.8, fill = "group", alpha = 0.6) %>%
+    ggadd("boxplot", alpha = 0) %>%            # this way, boxplot's on top
+    ggpar(yticks.by = 1, palette = c("#5D3A9B", "#E66100"))
 
 if(!dir.exists("figures")) {
     dir.create("figures")
