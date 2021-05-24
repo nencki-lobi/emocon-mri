@@ -1,12 +1,5 @@
 % Secend levels for PPI - both 1 sample and 2 sample design
 
-% Factorial design specification: Directory - cfg_files
-% Factorial design specification: Scans - cfg_files
-% Contrast Manager: Name - cfg_entry
-% Factorial design specification: Directory - cfg_files
-% Factorial design specification: Group 1 scans - cfg_files
-% Factorial design specification: Group 2 scans - cfg_files
-
 my_config = ini2struct('../../../config.ini');
 
 % what goes where or from where
@@ -27,7 +20,7 @@ subject_table.con_files = fullfile(ppi_dir, ppi_name, ...
     "sub-" + subject_table.label, "con_0001.nii");
 
 % the usual batch specification, using the above inputs - 1 run
-jobfile = {'second_levels_ppi_job.m'};
+jobfile = {'../ppi_shared/second_levels_ppi_job.m'};
 jobs = repmat(jobfile, 1, 1);
 inputs = cell(6, 1);
 

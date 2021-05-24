@@ -11,9 +11,11 @@ cfd_dir = fullfile(my_config.spm.root, "complete", "confounds");
 ppi_dir = fullfile(my_config.spm.root, "complete", "ppi");
 
 % analysis-specific variables
+task = "ofl";                       % task name
 ppi_file = "PPI_aMCCxUS.mat";       % name of PPI file
 ppi_name = "PPI_ofl_aMCCxUS";       % name of output folder
 psych_name = "US - noUS";           % name for PPI.P regressor
+physio_name = "aMCC BOLD";          % name for the PPI.Y regressor
 ctr_name = "aMCC PPI Interaction";  % name for the [1 0 0] contrast
 
 % patterns for BIDS-derivatives file names
@@ -27,7 +29,7 @@ subject_table = readtable(...
 
 % jobs specification
 nrun = height(subject_table);
-jobfile = {'ppi_model_ofl_job.m'};
+jobfile = {'../ppi_shared/ppi_model_job.m'};
 jobs = repmat(jobfile, 1, nrun);
 inputs = cell(13, nrun);
 for crun = 1:nrun
@@ -36,30 +38,29 @@ for crun = 1:nrun
     subject = subject_table.label(crun);
     bold_path = cellstr(fullfile(...
         deriv_dir, "spm", "smooth", "sub-" + subject, ...
-        sprintf(pat_smoothed, subject, "ofl")));
+        sprintf(pat_smoothed, subject, task)));
     mask_path = cellstr(fullfile(...
-        msk_dir, "sub-" + subject, sprintf(pat_mask, subject, "ofl")));
+        msk_dir, "sub-" + subject, sprintf(pat_mask, subject, task)));
     regressors_path = cellstr(fullfile(...
-        cfd_dir, subject + "_ofl.mat"));
+        cfd_dir, subject + "_" + task + ".mat"));
     
+    % pecify range of volumes to use
     bold = nifti(bold_path);
     frames = subject_table.discard_volumes_ofl(crun) + 1 : bold.dat.dim(4);
     
-    % inputs below will change depending on PPI
+    % PPI input file & output model directory
     ppi_input = load(fullfile(...
-        fl_dir, subject + "_ofl", ppi_file));
-    
+        fl_dir, subject + "_" + task, ppi_file));
     out_dir = cellstr(fullfile(...
         ppi_dir, ppi_name, "sub-" + subject));
    
-        
-    % regressors & contrast names below will change depending on the PPI
+    % fill in the inputs
     inputs{1, crun} = bold_path; % Expand image frames: NIfTI file(s) - cfg_files
     inputs{2, crun} = frames; % Expand image frames: Frames - cfg_entry
     inputs{3, crun} = out_dir; % fMRI model specification: Directory - cfg_files
     inputs{4, crun} = 'PPI Interaction'; % fMRI model specification: Name - cfg_entry
     inputs{5, crun} = ppi_input.PPI.ppi; % fMRI model specification: Value - cfg_entry
-    inputs{6, crun} = 'aMCC BOLD'; % fMRI model specification: Name - cfg_entry
+    inputs{6, crun} = char(physio_name); % fMRI model specification: Name - cfg_entry
     inputs{7, crun} = ppi_input.PPI.Y; % fMRI model specification: Value - cfg_entry
     inputs{8, crun} = char(psych_name); % fMRI model specification: Name - cfg_entry
     inputs{9, crun} = ppi_input.PPI.P; % fMRI model specification: Value - cfg_entry

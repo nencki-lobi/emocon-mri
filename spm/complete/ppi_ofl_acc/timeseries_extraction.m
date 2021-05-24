@@ -12,7 +12,7 @@ subject_table = readtable(fullfile(tbl_dir, "included_participants.csv"), ...
 
 
 nrun = height(subject_table);
-jobfile = {'timeseries_extraction_job.m'};
+jobfile = {'../ppi_shared/timeseries_extraction_job.m'};
 jobs = repmat(jobfile, 1, nrun);
 inputs = cell(8, nrun);
 
