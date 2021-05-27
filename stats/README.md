@@ -11,3 +11,11 @@ Files for producing statistics and figures reporeted in the article. Either R ma
 - skin_conductance.Rmd: analysis of skin conductance response amplitudes produced by PsPM
 - skin_conductance.jasp: JASP file with bayesian ANOVA for skin conductance
 - state\_anxiety\_ctg.jasp: JASP file with bayesian ANOVA for STAI-state
+
+## Comments
+
+The Rmd documents can be exported to html either from an IDE / editor of choice (Rstudio, emacs with ess) or by running:
+
+```
+Rscript -e "rmarkdown::render('<filename>.Rmd', output_format = 'html_document', output_file = '<filename>-exported.html')"
+```
