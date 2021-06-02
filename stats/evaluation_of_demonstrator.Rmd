@@ -26,9 +26,10 @@ The analysis is based on the subjects included in the MRI sample:
 ```{r}
 df_ca <- read_tsv(tab_file, col_types=cols()) %>%
     select(
-        c('subject_id', 'label', 'role', 'group', 'demonstrator_id',
-          'CONT_contingency', starts_with('ED'))
+        c("subject_id", "label", "role", "group", "demonstrator_id",
+          "CONT_contingency", starts_with("ED"))
     ) %>%
+    mutate(group = as.factor(group)) %>%
     filter(role == "OBS") %>%
     filter(CONT_contingency == "YES" & label != "Nagery")  # matches MRI
 ```
@@ -67,7 +68,7 @@ ed_plot <- df_ca %>%
     ggdotplot(x = "group", y = "value", facet.by = "name", color = "group",
               dotsize = 0.8, fill = "group", alpha = 0.6) %>%
     ggadd("boxplot", alpha = 0) %>%            # this way, boxplot's on top
-    ggpar(yticks.by = 1, palette = c("#5D3A9B", "#E66100"))
+    ggpar(yticks.by = 1, palette = c("#E66100", "#5D3A9B"))
 
 if(!dir.exists("figures")) {
     dir.create("figures")

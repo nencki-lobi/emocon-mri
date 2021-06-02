@@ -64,8 +64,10 @@ Contrast estimates & 95 % confidence intervals for the observational UR (obs US 
 
 ```{r}
 ofl_plot <- ofl %>%
+    mutate(group = as.factor(group)) %>%
     pivot_longer(cols = where(is.numeric), names_to = "roi", values_to = "contrast estimate") %>%
-    ggbarplot(x = "group", y = "contrast estimate", facet.by = "roi", add = "mean_ci")
+    ggbarplot(x = "group", y = "contrast estimate", facet.by = "roi", add = "mean_ci",
+              color = "group", palette = c("#E66100", "#5D3A9B"))
 
 ggexport(ofl_plot, filename = "figures/roi_ofl.png")
 ofl_plot
@@ -77,8 +79,10 @@ Contrast estimates & 95 % confidence intervals for the direct CR (CS+ - CS-)
 
 ```{r}
 de_plot <- de %>%
+    mutate(group = as.factor(group)) %>%
     pivot_longer(cols = where(is.numeric), names_to = "roi", values_to = "contrast estimate") %>%
-    ggbarplot(x = "group", y = "contrast estimate", facet.by = "roi", add = "mean_ci")
+    ggbarplot(x = "group", y = "contrast estimate", facet.by = "roi", add = "mean_ci",
+              color = "group", palette = c("#E66100", "#5D3A9B"))
 
 ggexport(de_plot, filename = "figures/roi_de.png")
 de_plot
