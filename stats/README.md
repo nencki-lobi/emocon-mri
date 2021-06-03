@@ -1,6 +1,6 @@
 # STATS
 
-Files for producing statistics and figures reporeted in the article. Either R markdown or JASP.
+Files for producing statistics and figures reporeted in the article. Uses R markdown files, JASP files or Python scripts.
 
 ## Contents
 
