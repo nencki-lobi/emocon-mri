@@ -1,9 +1,10 @@
 # STATS
 
-Files for producing statistics and figures reporeted in the article. Uses R markdown files, JASP files or Python scripts.
+Files for producing statistics and figures reported in the article. Uses R markdown files, JASP files or Python scripts.
 
 ## Contents
 
+- activation_plots.py: statistical map plots for the main contrasts of interest
 - contingency_table.Rmd: stats on contingency knowledge
 - evaluation\_of\_demonstrator.Rmd: analysis of evaluation of demonstrator, comparing friend and stranger groups
 - questionnaire_analysis.Rmd: analysis of STAI and SWE, comparing friend and stranger group
