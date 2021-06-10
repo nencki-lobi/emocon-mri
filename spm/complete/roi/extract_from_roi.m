@@ -5,7 +5,7 @@
 % available. The ROI definitions are created by prepare_roi.m (in this
 % folder).
 %
-% Creates two csv files (one per task), which can be analysed in R.
+% Creates csv files (one per contrast), which can be analysed in R.
 
 my_config = ini2struct('../../../config.ini');
 
@@ -18,9 +18,10 @@ subject_table = readtable(fullfile(tbl_dir, "included_participants.csv"), ...
     'TextType', 'string');
 
 % Create a struct array with tasks and respective contrast names
-inputs = struct(...
-    'task', {"ofl", "de"}, ...
-    'con', {"con_0005.nii", "con_0005.nii"});
+inputs = struct('task', {}, 'con', {}, 'suffix', {});
+inputs(1) = struct('task', "ofl", 'con', "con_0005.nii", 'suffix', "");
+inputs(2) = struct('task', "de", 'con', "con_0005.nii", 'suffix', "");
+inputs(3) = struct('task', "ofl", 'con', "con_0003.nii", 'suffix', "-us");
 
 % Extract from the same ROIs for both tasks
 for n = 1:length(inputs)
@@ -45,8 +46,9 @@ for n = 1:length(inputs)
         stats.label, fl_dir, inputs(n).task, inputs(n).con, ...
         fullfile(roi_dir, "merged_seed_FFA_vox200.nii"));
 
-    writetable(stats, ...
-        fullfile(tbl_dir, "roi_stats_" + inputs(n).task + ".csv"));
+    tbl_name = "roi_stats_" + inputs(n).task + inputs(n).suffix + ".csv";
+    writetable(stats, fullfile(tbl_dir, tbl_name))
+
 end
 
 
