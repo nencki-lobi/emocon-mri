@@ -89,8 +89,8 @@ Note: the above call to emmeans produces results equivalent to `t.test(m_amplitu
 plot_ofl <- afex_plot(
     object = anova_ofl,
     x = "stimulus",
-    trace = "group",
-    data_plot = FALSE,  # FALSE
+    data_plot = FALSE,
+    error = "within",
     factor_levels=list(
         stimulus=c(CS.plus.reinforced = 'US', CS.plus.nonreinforced = 'noUS')),
     ) + labs(y = "amplitude (arb. unit)") + ggpubr::theme_pubr()
@@ -98,10 +98,11 @@ plot_ofl <- afex_plot(
 plot_ofl
 ```
 
-Note: a comment on error bars can be found in the [Afex plot documentation](https://cran.r-project.org/web/packages/afex/vignettes/afex_plot_introduction.html#error-bars-for-mixed-models). Most notably:
+Note: the plot presents the main effect of the stimulus. Error bars (`error = "within`) represent 95 % (default) confidence intervals based on within-subject standard errors calculated using the Cosineau-Morey-O'Brien method. Details can be found in the [documentation]() for `afex_plot`, including the following passage:
 
-> In sum, using error bars for performing “inference by eye” - that is, using overlap or non-overlap of error bars to judge which means differ or do not differ from each other - is highly problematic for mixed models, due to the potentially complex dependency structures between the means. It would be best to avoid comparisons between means altogether. Instead, it is perhaps a good idea to plot the model-based error bars (which is the default) and use them for their intended purpose; judging which values of the estimated means are likely given what we have learned from the model (however, note that one cannot interpret a 95% confidence interval as having a 95% probability of containing the population mean).
+> In the case of designs involving repeated-measures factors the usual confidence intervals or standard errors (i.e., model-based confidence intervals or intervals based on the standard error of the mean) cannot be used to gauge significant differences as this requires knowledge about the correlation between measures. One popular alternative in the psychological literature are intervals based on within-subjects standard errors/confidence intervals (e.g., Cousineau & O'Brien, 2014). These attempt to control for the correlation across individuals and thereby allow judging differences between repeated-measures condition.
 
+General comments on error bars can also be found in the [Afex plot documentation](https://cran.r-project.org/web/packages/afex/vignettes/afex_plot_introduction.html#error-bars-for-mixed-models).
 
 ## DE
 
@@ -156,8 +157,8 @@ pairs(emmeans(anova_de, ~ stimulus | group), reverse = TRUE)
 plot_de <- afex_plot(
     object = anova_de,
     x = "stimulus",
-    trace = "group",
     data_plot = FALSE,
+    error = "within",
     factor_levels = list(
         stimulus = c(CS.plus = "CS+", CS.minus = "CS-"))
     ) +
@@ -189,7 +190,15 @@ write_tsv(jasp_data, file.path(tmp_outputs, "skin_conductance.tsv"))
 ## Combined plot
 
 ```{r}
+target_ppi = 300
 scr_plot <- ggarrange(plot_ofl, plot_de, common.legend = TRUE, labels = "AUTO")
-ggexport(scr_plot, filename = file.path(fig_dir, "scr_anova.png"))
+ggexport(
+    scr_plot,
+    filename = file.path(fig_dir, "scr_anova.png"),
+    width = 3.94 * target_ppi,
+    height = 3.54 * target_ppi,
+    res = target_ppi,
+    pointsize = 10
+    )
 scr_plot
 ```
