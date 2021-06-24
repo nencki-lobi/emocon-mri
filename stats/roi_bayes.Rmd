@@ -61,6 +61,11 @@ if(!dir.exists("figures")) {
 }
 ```
 
+Set the target ppi for saving
+```{r}
+target_ppi = 300
+```
+
 ## OFL - figure
 
 Contrast estimates & 95 % confidence intervals for the observational UR (obs US - obs noUS).
@@ -68,27 +73,60 @@ Contrast estimates & 95 % confidence intervals for the observational UR (obs US 
 ```{r}
 ofl_plot <- ofl %>%
     mutate(group = as.factor(group)) %>%
+    rename(Amy = amygdala) %>%
     pivot_longer(cols = where(is.numeric), names_to = "roi", values_to = "contrast estimate") %>%
     ggbarplot(x = "group", y = "contrast estimate", facet.by = "roi", add = "mean_ci",
-              color = "group", palette = c("#E66100", "#5D3A9B"))
+              color = "group", palette = c("#E66100", "#5D3A9B"),
+              xlab = FALSE, legend.title = "") +
+    rremove("x.text") + rremove("x.ticks")
 
-ggexport(ofl_plot, filename = "figures/roi_ofl.png")
 ofl_plot
+```
+
+Save the plot, making it compact (2 x 3.5 in).
+This way, it can be combined with the brain plots (double row, 6 x 3.5 in).
+
+```{r}
+ggexport(
+    ofl_plot,
+    filename = "figures/roi_ofl.png",
+    width = 2 * target_ppi,
+    height = 3.5 * target_ppi,
+    res = target_ppi,
+    pointsize = 8
+)
 ```
 
 ## DE - figure
 
-Contrast estimates & 95 % confidence intervals for the direct CR (CS+ - CS-)
+Contrast estimates & 95 % confidence intervals for the direct CR (CS+ - CS-).
+Arranged in one row.
 
 ```{r}
 de_plot <- de %>%
     mutate(group = as.factor(group)) %>%
+    rename(Amy = amygdala) %>%
     pivot_longer(cols = where(is.numeric), names_to = "roi", values_to = "contrast estimate") %>%
     ggbarplot(x = "group", y = "contrast estimate", facet.by = "roi", add = "mean_ci",
-              color = "group", palette = c("#E66100", "#5D3A9B"))
+              color = "group", palette = c("#E66100", "#5D3A9B"),
+              xlab = FALSE, ylab = "contr. est.", nrow = 1, legend = "top") +
+    rremove("x.text") + rremove("x.ticks")
 
-ggexport(de_plot, filename = "figures/roi_de.png")
 de_plot
+```
+
+Save the plot, making it compact (4 x 1.75 in).
+This way, it can be combined with the brain plots (single row, 6 x 1.75 in).
+
+```{r}
+ggexport(
+    de_plot,
+    filename = "figures/roi_de.png",
+    width = 4 * target_ppi,
+    height = 1.75 * target_ppi,
+    res = target_ppi,
+    pointsize = 8
+    )
 ```
 
 ## OFL (US) - figure
@@ -98,10 +136,22 @@ ofl_us_plot <- ofl_us %>%
     mutate(group = as.factor(group)) %>%
     pivot_longer(cols = where(is.numeric), names_to = "roi", values_to = "contrast estimate") %>%
     ggbarplot(x = "group", y = "contrast estimate", facet.by = "roi", add = "mean_ci",
-              color = "group", palette = c("#E66100", "#5D3A9B"))
+              color = "group", palette = c("#E66100", "#5D3A9B"),
+              xlab = FALSE, legend.title = "") +
+    rremove("x.text") + rremove("x.ticks")
 
-ggexport(ofl_us_plot, filename = "figures/roi_ofl-us.png")
 ofl_us_plot
+```
+
+```{r}
+ggexport(
+    ofl_us_plot,
+    filename = "figures/roi_ofl-us.png",
+    width = 4 * target_ppi,
+    height = 3.5 * target_ppi,
+    res = target_ppi,
+    pointsize = 8
+)
 ```
 
 ## OFL - stats

@@ -51,9 +51,10 @@ de_fwe = 5.40
 cuts = [-52, -42, -20, -4, 4, 20, 42, 52]
 
 # Create an empty figure
-fig1 = plt.figure(figsize=(8, 3.5), dpi=300)
+# aiming for 6 in width + 2 in to show bars
+fig1 = plt.figure(figsize=(6, 3.5), dpi=300)
 
-# Bottom row (stat_map)
+# Top row (stat_map)
 sm1 = plotting.plot_stat_map(
     stat_map_img = obs_map,
     threshold = obs_fwe,
@@ -61,12 +62,16 @@ sm1 = plotting.plot_stat_map(
     cut_coords = cuts[:4],
     annotate = False,
     figure = fig1,
-    axes = (0, 0.51, 0.75, 0.48),
+    axes = (0, 0.51, 0.98, 0.48),  # .98 will leave right margin, approx .1 in
     cmap = my_cm,
-    colorbar = False,
+    colorbar = True,
 )
 
-# Top row (stat map)
+# force redraw and calculate where the last brain ends on the figure
+fig1.canvas.draw_idle()  # needed for colorbar adjustments to be applied
+brain_xmax = max([ca.ax.get_position().xmax for ca in sm1.axes.values()])
+
+# Bottom row (stat map)
 sm2 = plotting.plot_stat_map(
     stat_map_img = obs_map,
     threshold = obs_fwe,
@@ -74,7 +79,7 @@ sm2 = plotting.plot_stat_map(
     cut_coords = cuts[4:],
     annotate = False,
     figure = fig1,
-    axes = (0, 0, 0.75, 0.48),
+    axes = (0, 0, brain_xmax, 0.48),
     cmap = my_cm,
     colorbar = False,
 )
@@ -83,33 +88,13 @@ sm2 = plotting.plot_stat_map(
 sm1.annotate(left_right=False, positions=True, size=8)
 sm2.annotate(left_right=False, positions=True, size=8)
 
-# Right side, axial slice on which cut coordinates will be shown
-cc = plotting.plot_stat_map(
-    stat_map_img = obs_map,
-    threshold = obs_fwe,
-    display_mode = 'z',
-    cut_coords = [-14],
-    figure = fig1,
-    axes = (0.8, 0.25, 0.2, 0.48),
-    cmap = my_cm,
-    colorbar = True,
-    annotate = False,
-)
-
-# Draw lines showing cut coordinates
-cc.annotate(left_right=False, positions=True, size=8)
-bounds = cc.axes[-14].get_object_bounds()
-cc.axes[-14].ax.vlines(x=cuts, ymin=bounds[2], ymax=bounds[3], color='black',
-                       alpha=0.5)
-
 # Add 'T-values' above the colorbar (alt. use annotate with different syntax)
-cc.frame_axes.text(
-    x = 0.98,
-    y = 1.02,
+fig1.text(
+    x = .98,
+    y = .5,
     s = 'T-values',
     horizontalalignment = 'right',
-    verticalalignment = 'bottom',
-    transform = cc.frame_axes.transAxes
+    verticalalignment = 'top',
 )
 
 # Save the figure
@@ -120,8 +105,8 @@ print('Saved', path_fig1)
 
 # FIGURE 2 - direct expression
 
-# Create empty figure, 5.9 in = 150 mm = 1.75 column width
-fig2 = plt.figure(figsize=(5.9, 1.75), dpi = 300)
+# Create empty figure, 4 in leaving 4 in for the ROI bars
+fig2 = plt.figure(figsize=(6, 1.75), dpi = 300)
 
 # Plot stat map - this time in a typical xyz mode
 sm3 = plotting.plot_stat_map(
@@ -131,6 +116,7 @@ sm3 = plotting.plot_stat_map(
     draw_cross = False,
     cmap = my_cm,
     figure = fig2,
+    axes = (0, 0, 0.98, 1),  # .98 will leave right margin of approx .1 in
     annotate = False,
 )
 
@@ -138,13 +124,12 @@ sm3 = plotting.plot_stat_map(
 sm3.annotate(left_right=False, positions=True, size=8)
 
 # Add 'T-values' next to the colorbar
-sm3.frame_axes.text(
-    x = 0.92,  # 1.0
-    y = 0.98,  # 1.02
+fig2.text(
+    x = .9,
+    y = .98,
     s = 'T-values',
     horizontalalignment = 'right',
-    verticalalignment = 'top',
-    transform = sm3.frame_axes.transAxes,
+    verticalalignment = 'top'
 )
 
 # Save the figure
