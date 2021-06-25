@@ -63,7 +63,17 @@ ed_plot <- df_ca %>%
     select(c("group", starts_with("ED"))) %>%
     pivot_longer(cols = starts_with("ED")) %>% # creates name, value
     mutate(
-        name = str_replace(name, "ED_", "")
+        # drop the ED prefix & convert to factor
+        name = as_factor(str_replace(name, "ED_", ""))
+    ) %>%
+    mutate(
+        # change order and then names to control how they appear in the figure
+        name = fct_recode(
+            fct_relevel(name, c("discomfort", "expressive", "natural", "empathy", "identify")),
+            expressiveness = "expressive",
+            naturalness = "natural",
+            identifying = "identify"
+        )
     ) %>%
     ggdotplot(x = "group", y = "value", facet.by = "name", color = "group",
               dotsize = 0.8, fill = "group", alpha = 0.6) %>%
