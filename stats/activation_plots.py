@@ -67,10 +67,6 @@ sm1 = plotting.plot_stat_map(
     colorbar = True,
 )
 
-# force redraw and calculate where the last brain ends on the figure
-fig1.canvas.draw_idle()  # needed for colorbar adjustments to be applied
-brain_xmax = max([ca.ax.get_position().xmax for ca in sm1.axes.values()])
-
 # Bottom row (stat map)
 sm2 = plotting.plot_stat_map(
     stat_map_img = obs_map,
@@ -79,7 +75,7 @@ sm2 = plotting.plot_stat_map(
     cut_coords = cuts[4:],
     annotate = False,
     figure = fig1,
-    axes = (0, 0, brain_xmax, 0.48),
+    axes = (0, 0, 0.90, 0.48),  # .90 hardcoded to match 1st row (no colorbar)
     cmap = my_cm,
     colorbar = False,
 )
@@ -136,3 +132,9 @@ fig2.text(
 path_fig2 = os.path.join('figures', 'stat_maps_de.png')
 fig2.savefig(path_fig2)
 print('Saved', path_fig2)
+
+# Print where first row of fig1 ends - colorbar doesn't move things
+# instantly and I couldn't find a way to force an update before
+# saving.
+brain_xmax = max([ca.ax.get_position().xmax for ca in sm1.axes.values()])
+print('Last brain in stat map 1 ends at', brain_xmax, '(figure coordinates)')
