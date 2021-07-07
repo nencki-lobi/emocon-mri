@@ -1,0 +1,68 @@
+---
+output:
+  html_document:
+    theme: spacelab
+---
+
+# Sample characterisation (age)
+
+```{r, message = FALSE}
+library("tidyverse")
+library("rstatix")
+library("ini")
+```
+
+Load the data from the big behavioural table:
+
+```{r}
+config <- read.ini("../config.ini")
+tbl_path <- file.path(config$DEFAULT$QUESTIONNAIRE_DIR, "table.tsv")
+df <- read_tsv(tbl_path, col_types = cols()) %>%
+    select(c(subject_id:demonstrator_id, CONT_contingency))
+```
+
+Exclusions for technical reasons (3 subjects) and due to high number of motion outlier volumes (1 subject), all in the stranger group:
+
+```{r}
+df <- df %>%
+	filter(! label %in% c("Trltdn", "Cgotop", "Plarre", "Nagery"))
+```
+
+As a sanity check, get the number of participants after those exclusions (note that the number of demonstrators has to be equal to the number of friend observers):
+
+```{r}
+df %>%
+    count(role, group)
+```
+
+We are, however, interested only in the contingency-aware participants from now on (i.e. subjects for whom fMRI data is presented, not all who were recruited).
+
+Age of the observers, regardless of group (note: age is the only numerical variable in `df` so no need to be explicit):
+
+```{r}
+df %>%
+	filter(role == "OBS" & CONT_contingency == "YES") %>%
+	get_summary_stats(show = c("mean", "sd", "median", "iqr", "min", "max"))
+```
+
+Age of the observers, broken down by group:
+
+```{r}
+df %>%
+	filter(role == "OBS" & CONT_contingency == "YES") %>%
+	group_by(group) %>%
+	get_summary_stats(show = c("mean", "sd", "median", "iqr", "min", "max"))
+```
+
+For the demonstrators, drop those for whom neither friend nor stranger learned the contingency, and calculate the age statistics:
+
+```{r}
+dem_subset <- df %>%
+    filter(role == "OBS" & CONT_contingency == "YES") %>%
+    pull(demonstrator_id) %>%
+    unique()
+
+df %>%
+    filter(role == "DEM" & subject_id %in% dem_subset) %>%
+    get_summary_stats(show = c("mean", "sd", "median", "iqr", "min", "max"))
+```
