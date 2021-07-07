@@ -1,0 +1,39 @@
+---
+output:
+  html_document:
+    theme: spacelab
+---
+
+# Motion outliers
+
+In the fMRI analysis, "motion outliers" flagged by fMRIprep were added
+as regressors. A decision was made to exclude subjects for whom more
+than 25 % of volumes were flagged as such (leading to exclusion of one
+subject). The numbers of outliers were calculated in
+`spm/complete/prepare.m`. This notebook reports on the average /
+median number of motion outlier regressors used.
+
+```{r, message = FALSE}
+library("tidyverse")
+library("rstatix")
+library("ini")
+```
+
+Load the output produced by `spm/complete/prepare.m`
+
+```{r}
+config <- read.ini("../config.ini")
+tbl_path <- file.path(config$SPM$ROOT, "complete", "other",
+                      "motion_outliers.csv")
+df <- read_csv(tbl_path, col_types = cols())
+df
+```
+
+Matching other analyses, select fitting data. Use 90 & 45 as approximate cut-offs for both groups, as there are no edge cases (there were 362/380 and 184 volumes, so exact cut-offs are 91/95 and 46).
+
+```{r}
+df %>%
+    filter(motion_ofl < 90 & motion_de < 45) %>%
+    get_summary_stats(show=c("min", "max", "median", "mean"))
+```
+

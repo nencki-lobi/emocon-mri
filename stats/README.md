@@ -9,9 +9,11 @@ Files for producing statistics and figures reported in the article. Uses R markd
 - contingency_table.Rmd: stats on contingency knowledge
 - evaluation\_of\_demonstrator.Rmd: analysis of evaluation of demonstrator, comparing friend and stranger groups
 - fonts/: folder with font(s) needed to make some annotations work
+- motion_outliers.Rmd: median numbers of motion outlier regressors per subject
 - ppi_plots.py: statistical map plots for PPI results
 - questionnaire_analysis.Rmd: analysis of STAI and SWE, comparing friend and stranger group
 - roi_bayes.Rmd: region-of-interest between-group analysis
+- sample_characterisation.Rmd: age / n by group
 - skin_conductance.Rmd: analysis of skin conductance response amplitudes produced by PsPM
 - skin_conductance.jasp: JASP file with bayesian ANOVA for skin conductance
 - state\_anxiety\_ctg.jasp: JASP file with bayesian ANOVA for STAI-state
