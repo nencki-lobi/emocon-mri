@@ -22,6 +22,7 @@ inputs = struct('task', {}, 'con', {}, 'suffix', {});
 inputs(1) = struct('task', "ofl", 'con', "con_0005.nii", 'suffix', "");
 inputs(2) = struct('task', "de", 'con', "con_0005.nii", 'suffix', "");
 inputs(3) = struct('task', "ofl", 'con', "con_0003.nii", 'suffix', "-us");
+inputs(4) = struct('task', "ofl", 'con', "con_0004.nii", 'suffix', "-nous");
 
 % Extract from the same ROIs for both tasks
 for n = 1:length(inputs)

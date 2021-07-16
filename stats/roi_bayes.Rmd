@@ -52,6 +52,7 @@ data_dir <- file.path(config$SPM$ROOT, "complete", "other")
 ofl <- read_csv(file.path(data_dir, "roi_stats_ofl.csv"), col_types = cols())
 de <- read_csv(file.path(data_dir, "roi_stats_de.csv"), col_types = cols())
 ofl_us <- read_csv(file.path(data_dir, "roi_stats_ofl-us.csv"), col_types = cols())
+ofl_no_us <- read_csv(file.path(data_dir, "roi_stats_ofl-nous.csv"), col_types = cols())
 ```
 
 If the figures directory does not exist, create it here:
@@ -129,30 +130,74 @@ ggexport(
     )
 ```
 
-## OFL (US) - figure
+## OFL (US and noUS) - figure
+
+Might be good to show contrast estimates separately for US and noUS.
+There is one data file per contrast, so we need to join them first:
 
 ```{r}
-ofl_us_plot <- ofl_us %>%
-    mutate(group = as.factor(group)) %>%
-    pivot_longer(cols = where(is.numeric), names_to = "roi", values_to = "contrast estimate") %>%
-    ggbarplot(x = "group", y = "contrast estimate", facet.by = "roi", add = "mean_ci",
-              color = "group", palette = c("#E66100", "#5D3A9B"),
-              xlab = FALSE, legend.title = "") +
-    rremove("x.text") + rremove("x.ticks")
+ofl_both <- left_join(ofl_us, ofl_no_us, by = c("label", "group"), suffix = c(".us", ".nous"))
+```
 
-ofl_us_plot
+For the plot, we will pivot longer and identify an observation by 2 columns (roi, contrast).
+This way we can put contrast on x axis.
+
+```{r}
+ofl_both_plot <- ofl_both %>%
+    mutate(group = as.factor(group)) %>%
+    pivot_longer(cols = where(is.numeric), names_to = c("roi", "contrast"), names_sep = "[^[:alnum:]]",
+                 values_to = "contrast estimate") %>%
+    mutate(contrast = str_replace_all(contrast, c("no" = "no ", "us" = "US"))) %>%
+    ggbarplot(x = "contrast", y = "contrast estimate", facet.by = "roi", add = "mean_ci",
+              color = "group", palette = c("#E66100", "#5D3A9B"),
+              position = position_dodge(0.9),
+              xlab = FALSE, legend.title = "")
+
+ofl_both_plot
 ```
 
 ```{r}
 ggexport(
-    ofl_us_plot,
-    filename = "figures/roi_ofl-us.png",
+    ofl_both_plot,
+    filename = "figures/roi_ofl-sticks.png",
     width = 4 * target_ppi,
     height = 3.5 * target_ppi,
     res = target_ppi,
     pointsize = 8
 )
 ```
+
+For an alternative take, we will order the bars: friend us, friend no us, stranger us, stranger no us.
+We will distinguish them by color (transparency).
+
+```{r}
+ofl_bonus_plot <- ofl_both %>%
+    pivot_longer(cols = where(is.numeric), names_to = c("roi", "contrast"), names_sep = "[^[:alnum:]]+",
+                 values_to = "contrast estimate") %>%
+    mutate(
+        contrast = str_replace_all(contrast, c("no" = "no ", "us" = "US")),
+        thing = str_c(group, " ", contrast)
+    ) %>%
+    ggbarplot(x = "thing", y = "contrast estimate", facet.by = "roi", add = "mean_ci",
+              order = c("friend US", "friend no US", "stranger US", "stranger no US"),
+              color = "thing", palette = c("#E66100", "#E6610088", "#5D3A9B", "#5D3A9B88"),
+              xlab = FALSE, legend.title = "") +
+    rremove("x.text") + rremove("x.ticks")
+
+ofl_bonus_plot
+```
+
+```{r}
+ggexport(
+    ofl_bonus_plot,
+    filename = "figures/roi_ofl-sticks_alt.png",
+    width = 5 * target_ppi,  # bit wider to fit all legends
+    height = 3.5 * target_ppi,
+    res = target_ppi,
+    pointsize = 8
+)
+```
+
 
 ## OFL - stats
 
