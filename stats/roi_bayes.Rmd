@@ -148,7 +148,8 @@ ofl_both_plot <- ofl_both %>%
     pivot_longer(cols = where(is.numeric), names_to = c("roi", "contrast"), names_sep = "[^[:alnum:]]",
                  values_to = "contrast estimate") %>%
     mutate(contrast = str_replace_all(contrast, c("no" = "no ", "us" = "US"))) %>%
-    ggbarplot(x = "contrast", y = "contrast estimate", facet.by = "roi", add = "mean_ci",
+    ggbarplot(x = "contrast", y = "contrast estimate", facet.by = "roi", add = c("mean_ci", "jitter"),
+              add.params = list(size = .8, alpha = .35),
               color = "group", palette = c("#E66100", "#5D3A9B"),
               position = position_dodge(0.9),
               xlab = FALSE, legend.title = "")
@@ -168,7 +169,9 @@ ggexport(
 ```
 
 For an alternative take, we will order the bars: friend us, friend no us, stranger us, stranger no us.
-We will distinguish them by color (transparency).
+We will distinguish them by color.
+I selected an additional, but roughly similar contrasting pair
+[from here](https://davidmathlogic.com/colorblind/#%23E66100-%235D3A9B-%23FFC20A-%230C7BDC).
 
 ```{r}
 ofl_bonus_plot <- ofl_both %>%
@@ -178,9 +181,10 @@ ofl_bonus_plot <- ofl_both %>%
         contrast = str_replace_all(contrast, c("no" = "no ", "us" = "US")),
         thing = str_c(group, " ", contrast)
     ) %>%
-    ggbarplot(x = "thing", y = "contrast estimate", facet.by = "roi", add = "mean_ci",
+    ggbarplot(x = "thing", y = "contrast estimate", facet.by = "roi", add = c("mean_ci", "jitter"),
+              add.params = list(size = .8, alpha = .3),
               order = c("friend US", "friend no US", "stranger US", "stranger no US"),
-              color = "thing", palette = c("#E66100", "#E6610088", "#5D3A9B", "#5D3A9B88"),
+              color = "thing", palette = c("#E66100", "#FFC20A", "#5D3A9B", "#0C7BDC"),
               xlab = FALSE, legend.title = "") +
     rremove("x.text") + rremove("x.ticks")
 
