@@ -27,14 +27,14 @@ The analysis is based on the subjects included in the MRI sample:
 df_ca <- read_tsv(tab_file, col_types=cols()) %>%
     select(
         c("subject_id", "label", "role", "group", "demonstrator_id",
-          "CONT_contingency", starts_with("ED"))
+          "CONT_contingency", starts_with("ED"), CONT_shock_pleasant)
     ) %>%
     mutate(group = as.factor(group)) %>%
     filter(role == "OBS") %>%
     filter(CONT_contingency == "YES" & label != "Nagery")  # matches MRI
 ```
 
-Each of the four scales will be compared using the Wilcoxon-Mann-Whitney test implemented in the standard `stats` library.
+Each of the five scales will be compared using the Wilcoxon-Mann-Whitney test implemented in the standard `stats` library.
 
 How much discomfort did the demonstrator experience:
 ```{r, warning=FALSE}
@@ -56,14 +56,19 @@ How much empathy did the observer feel:
 wilcox.test(ED_empathy ~ group, df_ca)
 ```
 
+How unpleasant was the observed shock:
+```{r, warning=FALSE}
+wilcox.test(CONT_shock_pleasant ~ group, df_ca)
+```
+
 Additionally, the ratings can be plotted:
 
 ```{r, warning=FALSE}
 ed_plot <- df_ca %>%
-    select(c("group", starts_with("ED"))) %>%
-    pivot_longer(cols = starts_with("ED")) %>% # creates name, value
+    select("group", starts_with("ED")) %>%
+    pivot_longer(cols = starts_with("ED")) %>%  #creates name, value
     mutate(
-        # drop the ED prefix & convert to factor
+        # change the variables names & convert to factor
         name = as_factor(str_replace(name, "ED_", ""))
     ) %>%
     mutate(
@@ -75,16 +80,26 @@ ed_plot <- df_ca %>%
             identifying = "identify"
         )
     ) %>%
-    ggdotplot(x = "group", y = "value", facet.by = "name", color = "group",
-              dotsize = 0.8, fill = "group", alpha = 0.6) %>%
+    ggdotplot(x = "group", y = "value", facet.by = "name", color = "group", fill = "group",
+              dotsize = 0.5, alpha = 0.6, nrow = 1, ncolumn = 5, font.label = 1) %>%
     ggadd("boxplot", alpha = 0) %>%            # this way, boxplot's on top
-    ggpar(yticks.by = 1, palette = c("#E66100", "#5D3A9B"))
+    ggpar(yticks.by = 1, font.ytickslab = 8, palette = c("#D55E00", "#0072B2")) %>%
+    + rremove("x.text") + rremove("x.ticks") + rremove("xlab") + theme(strip.text.x = element_text(size = 8))
 
 if(!dir.exists("figures")) {
     dir.create("figures")
 }
 
-ggexport(ed_plot, filename = "figures/evaluation_of_demonstrator.png")
+target_ppi = 300
+
+ggexport(
+    ed_plot,
+    filename = "figures/evaluation_of_demonstrator.png",
+    width = 5 * target_ppi,
+    height = 3.5 * target_ppi,
+    res = target_ppi,
+    pointsize = 8
+)
 ed_plot
 ```
 

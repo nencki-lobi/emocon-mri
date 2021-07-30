@@ -184,7 +184,7 @@ ofl_bonus_plot <- ofl_both %>%
     ggbarplot(x = "thing", y = "contrast estimate", facet.by = "roi", add = c("mean_ci", "jitter"),
               add.params = list(size = .8, alpha = .3),
               order = c("friend US", "friend no US", "stranger US", "stranger no US"),
-              color = "thing", palette = c("#E66100", "#FFC20A", "#5D3A9B", "#0C7BDC"),
+              color = "thing", palette = c("#D55E00", "#E69F00", "#0072B2", "#56B4E9"),
               xlab = FALSE, legend.title = "") +
     rremove("x.text") + rremove("x.ticks")
 

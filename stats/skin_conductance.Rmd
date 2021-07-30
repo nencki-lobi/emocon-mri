@@ -98,6 +98,42 @@ plot_ofl <- afex_plot(
 plot_ofl
 ```
 
+```{r}
+boxplot_ofl <- ws_avg_ofl%>%
+  select("group", "stimulus", "m_amplitude") %>%
+  filter(stimulus != "CS minus") %>%
+  mutate(
+    stimulus = as_factor(str_replace_all(stimulus, c("CS plus reinforced" = "US", "CS plus nonreinforced" = "no US"))),
+    thing = str_c(group, " ", stimulus)
+  ) %>%
+  ggboxplot (x = "thing", y = "m_amplitude", color = "group", order = c("friend US", "friend no US", "stranger US", "stranger no US"), alpha = 0.9, palette = c("#E66100", "#5D3A9B"), xlab = FALSE, legend.title = "") +
+  labs(y = "amplitude (arb. unit)") +
+  scale_x_discrete(labels = c("friend US" = "US", "friend no US" = "no US", "stranger US" = "US", "stranger no US" = "no US")) + theme(legend.text = element_text(size=15)) 
+
+boxplot_ofl <- ggpar(boxplot_ofl, font.tickslab = 10)
+
+if(!dir.exists("figures")) {
+    dir.create("figures")
+}
+
+target_ppi = 300
+
+ggexport(
+    boxplot_ofl,
+    filename = "figures/gsr_ofl_boxplot.png",
+    width = 5.5 * target_ppi,
+    height = 4 * target_ppi,
+    res = target_ppi,
+    pointsize = 8
+)
+boxplot_ofl
+```
+```{r}
+ws_avg_ofl %>%
+  group_by(stimulus, group) %>%
+  summarise_at(vars(m_amplitude), list(name = median))
+```
+
 Note: the plot presents the main effect of the stimulus. Error bars (`error = "within`) represent 95 % (default) confidence intervals based on within-subject standard errors calculated using the Cosineau-Morey-O'Brien method. Details can be found in the [documentation]() for `afex_plot`, including the following passage:
 
 > In the case of designs involving repeated-measures factors the usual confidence intervals or standard errors (i.e., model-based confidence intervals or intervals based on the standard error of the mean) cannot be used to gauge significant differences as this requires knowledge about the correlation between measures. One popular alternative in the psychological literature are intervals based on within-subjects standard errors/confidence intervals (e.g., Cousineau & O'Brien, 2014). These attempt to control for the correlation across individuals and thereby allow judging differences between repeated-measures condition.
@@ -168,6 +204,35 @@ plot_de <- afex_plot(
 
 plot_de
 ```
+```{r}
+boxplot_de <- ws_avg_de%>%
+  select("group", "stimulus", "m_amplitude") %>%
+  mutate(
+    stimulus = as_factor(str_replace_all(stimulus, c("CS plus" = "CS+", "CS minus" = "CS-"))),
+    thing = str_c(group, " ", stimulus)
+  ) %>%
+  ggboxplot (x = "thing", y = "m_amplitude", color = "group", order = c("friend CS+", "friend CS-", "stranger CS+", "stranger CS-"), alpha = 0.9, palette = c("#E66100", "#5D3A9B"), xlab = FALSE, legend.title = "") +
+  labs(y = "amplitude (arb. unit)") +
+  scale_x_discrete(labels = c("friend CS+" = "CS+", "friend CS-" = "CS-", "stranger CS+" = "CS+", "stranger CS-" = "CS-")) + theme(legend.text = element_text(size=15)) 
+
+boxplot_de <- ggpar(boxplot_de, font.tickslab = 10)
+
+if(!dir.exists("figures")) {
+    dir.create("figures")
+}
+
+target_ppi = 300
+
+ggexport(
+    boxplot_de,
+    filename = "figures/gsr_de_boxplot.png",
+    width = 5.5 * target_ppi,
+    height = 4 * target_ppi,
+    res = target_ppi,
+    pointsize = 8
+)
+boxplot_de
+```
 
 ## Data export
 
@@ -202,3 +267,71 @@ ggexport(
     )
 scr_plot
 ```
+```{r}
+target_ppi = 300
+scr_boxplot <- ggarrange(boxplot_ofl, boxplot_de, common.legend = TRUE, labels = "AUTO")
+ggexport(
+    scr_boxplot,
+    filename = file.path(fig_dir, "scr_boxplot_anova_3.png"),
+    width = 8 * target_ppi,
+    height =  5 * target_ppi,
+    res = target_ppi,
+    pointsize = 8
+    )
+scr_boxplot
+```
+
+
+```{r}
+boxplot_ofl <- ws_avg_ofl%>%
+  select("group", "stimulus", "m_amplitude") %>%
+  filter(stimulus != "CS minus") %>%
+  mutate(
+    stimulus = as_factor(str_replace_all(stimulus, c("CS plus reinforced" = "US", "CS plus nonreinforced" = "no US"))),
+    thing = str_c(group, " ", stimulus)
+  ) %>%
+  ggboxplot (x = "thing", y = "m_amplitude", order = c("friend US", "friend no US", "stranger US", "stranger no US"),
+             color = "thing", palette = c("#D55E00", "#E69F00", "#0072B2", "#56B4E9"), legend = c(0.75,0.9),
+             xlab = FALSE, legend.title = "") +
+  labs(y = "amplitude (arb. unit)") +
+  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+
+if(!dir.exists("figures")) {
+  dir.create("figures")
+}
+
+boxplot_ofl
+```
+```{r}
+boxplot_de <- ws_avg_de%>%
+  select("group", "stimulus", "m_amplitude") %>%
+  mutate(
+    stimulus = as_factor(str_replace_all(stimulus, c("CS plus" = "CS+", "CS minus" = "CS-"))),
+    thing = str_c(group, " ", stimulus)
+  ) %>%
+  ggboxplot (x = "thing", y = "m_amplitude", order = c("friend CS+", "friend CS-", "stranger CS+", "stranger CS-"),
+             color = "thing", palette = c("#D55E00", "#E69F00", "#0072B2", "#56B4E9"), legend = c(0.3,0.9),
+             xlab = FALSE, legend.title = "") +
+  labs(y = "amplitude (arb. unit)") +
+  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+
+if(!dir.exists("figures")) {
+  dir.create("figures")
+}
+
+boxplot_de
+```
+```{r}
+target_ppi = 300
+scr_boxplot_4colors <- ggarrange(boxplot_ofl, boxplot_de, labels = "AUTO")
+ggexport(
+    scr_boxplot_4colors,
+    filename = file.path(fig_dir, "scr_boxplot_4colors_anova.png"),
+    width = 7.5 * target_ppi,
+    height =  5 * target_ppi,
+    res = target_ppi,
+    pointsize = 8
+    )
+scr_boxplot_4colors
+```
+
