@@ -24,10 +24,13 @@ This is how the scripts are laid out (described in a logical order):
   - Second levels for primary contrasts of interest (US > noUS, CS+ > CS-): folders `second_level_<task>_basic`
 	- 1 sample t-test (pooled): `ttest_1s.m`
 	- 2 sample t-test (between-group): `ttest_2s.m`
+	- Thresholded SPM export: `export_1s.m`
+  - Second levels for additional contrasts (US, CS x t): folders `second_level_<task>_extra`
 - ROI analysis (i.e. parameter extraction): folder `roi`
   - Prepare ROIs (download, unpack, combine): `prepare_roi.m`
   - Parameter extraction: `extract_from_roi.m`
 - PPI analysis: folders `ppi_<task>_<roi>` (and `ppi_shared`) with:
 	- VOI specification & timeseries extraction: `timeseries_extraction.m`
 	- PPI model: `ppi_model_<task>.m`
-	- Second level (1 and 2 sample t-test): `second_levels_ppi`
+	- Second level (1 and 2 sample t-test): `second_levels_ppi.m`
+	- Thresholded SPM export (selected PPIs): `export_*.m`
