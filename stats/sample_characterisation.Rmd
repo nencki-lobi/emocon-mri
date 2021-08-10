@@ -76,11 +76,26 @@ df %>%
 	get_summary_stats(friendship_length,  show = c("mean", "sd", "median", "iqr", "min", "max"))
 ```
 
-McGill Friendship Questionnaire score (Friend group only, both demonstrators and observers):
+McGill Friendship Questionnaire score (Friend group only, observers):
+* n=34 because subject Framwy did not respond
 
 ```{r}
 df %>%
-	filter(df[(role == "OBS" & CONT_contingency == "YES" & group == "friend") | (role == "DEM" & group = "friend")]) #%>%
-	#get_summary_stats(MFQ_ra,  show = c("mean", "sd", "median", "iqr", "min", "max"))
+  filter(role == "OBS" & CONT_contingency == "YES" & group == "friend") %>%
+	get_summary_stats(MFQ_ra,  show = c("mean", "sd", "median", "iqr", "min", "max"))
 ```
 
+McGill Friendship Questionnaire score (Friend group only, demonstrators for whom observers learned contingency):
+* n=34 because subject Framwy did not respond
+
+```{r}
+df_dem <- df
+dem_subset <- df %>%
+    filter(role == "OBS" & CONT_contingency == "YES", group == "friend") %>%
+    pull(demonstrator_id) %>%
+    unique()
+
+df_dem %>%
+    filter(role == "DEM" & subject_id %in% dem_subset) %>%
+    get_summary_stats(MFQ_ra, show = c("mean", "sd", "median", "iqr", "min", "max"))
+```
