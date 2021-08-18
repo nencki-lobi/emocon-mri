@@ -8,8 +8,5 @@ DERIV_DIR = /Volumes/MyBookPro/emocon_mri/derived
 QUESTIONNAIRE_DIR = /Volumes/MyBookPro/emocon_mri/questionnaire
 [SPM]
 ROOT = /Volumes/MyBookPro/emocon_mri/spm
-[PHYSIO]
-EDA_DERIV_DIR = /Volumes/MyBookPro/emocon_mri/eda_derived
-PULSE_DERIV_DIR = /Volumes/MyBookPro/emocon_mri/pulse_derived
 [PSPM]
 ROOT = /Volumes/MyBookPro/emocon_mri/pspm
