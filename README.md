@@ -6,7 +6,7 @@ Setting up
 
 ### Python
 
-Create a virtual environment and then install packages using:
+Create a virtual environment and then install packages using the following command:
 ```
 pip install -r requirements.txt
 ```
