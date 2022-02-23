@@ -21,18 +21,20 @@ library('ggpubr')
 
 ## Introduction
 Following the comment from the Reviewer:
+
 > For TPJ and pSTS, a lateralized mask was used due to known asymmetries on the functional level. I wonder why the authors did not do the same for the FFA given its lateralization in the perception of faces in the left visual field / right hemisphere (e.g. Yovel et al. 2008).
 > Yovel, G., Tambini, A., & Brandman, T. (2008). The asymmetry of the fusiform face area is a stable individual characteristic that underlies the left-visual-field superiority for faces. Neuropsychologia, 46(13), 3061-3068.
 
-I would agree that there is reasonable basis to treat the FFA in a manner analogous to TPJ and pSTS, and use rFFA in the analysis (due to the reported right-hemispheric dominance). In this report I will assess the impact of FFA ROI laterality on the observed results and provide updated statistics.
+We would agree that there is reasonable basis to treat the FFA in a manner analogous to TPJ and pSTS, and use rFFA in the analysis (due to the reported right-hemispheric dominance).
+In this report we will assess the impact of FFA ROI laterality on the observed results and provide updated statistics.
 
 
 ## Method
 
+We limit the current analysis to the OFL (US/noUS), because that's when participants actually process faces (also, bilateral FFA activations are pretty much zero during DE, but we report them in the paper for completeness).
 
-I limited the current analysis to the OFL (US/noUS), because that's when participants actually process faces (also, bilateral FFA activations are pretty much zero during DE, but we report them in the paper for completeness).
-
-Mecause I don't have an easy access to Matlab any more, I used a Python script (not yet on GitHub) to extract beta parameters for each subject and each condition (US, noUS) from right, left, and bilateral FFAs:
+Note (MS): the code for this report is independent from the main code base and uses only data publically available on OSF.
+Because I don't have an easy access to Matlab any more, I used a Python script to extract beta parameters for each subject and each condition (US, noUS) from right, left, and bilateral FFAs:
 
 ```{r}
 config <- read.ini("config.ini")
@@ -43,7 +45,7 @@ df <- read_csv(file.path(config$extras$roi_output, 'ffa_betas.csv'), col_types=c
 head(df)
 ```
 
-I'm converting the data frame to a tidy representation (1 row per observation):
+Converting the data frame to a tidy representation (1 row per observation):
 
 ```{r}
 tidy_df <- df %>% 
@@ -69,13 +71,11 @@ tidy_df %>% ggbarplot(
     x = "side", y = "contrast_estimate", facet.by=c('group', 'condition'), add = c("mean_ci", "jitter"))
 ```
 
-The same can be shown for US > noUS (calculated by subtracting the averaged parameters -- it would be more correct to rely on voxelwise subtraction ie. taking the relevant SPM beta file, but I'm approximating).
+Same, but without jitter (to focus on CI error bars):
 
 ```{r}
-tidy_df %>%
-    pivot_wider(names_from=condition, values_from=contrast_estimate) %>%  # creates (us, no) columns, replacing condition and contrast estimate
-    mutate(ur = us - no) %>%
-    ggbarplot(x = "side", y = "ur", facet.by = "group", add = c("mean_ci", "jitter"))
+tidy_df %>% ggbarplot(
+    x = "side", y = "contrast_estimate", facet.by=c('group', 'condition'), add = c("mean_ci"))
 ```
 
 ### Numeric comparison: left vs right
