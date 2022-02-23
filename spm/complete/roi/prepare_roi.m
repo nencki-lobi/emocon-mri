@@ -23,11 +23,10 @@
 % The seeds for AI, amygdala and fusiform are combined to form a single
 % ROI per structure (bilateral) using spm_imcalc.
 %
-% Some ROIs (used in other analyses) are not created in this script. An
-% alternative definition of AI (more extensive, used for PPI) was obtained
-% from Björn R. Lindström. An alternative defintion of Amygdala (slightly
-% more extensive), taken from the Harvard - Oxford atlas, is created by the
-% script in utils/create_roi_masks.py.
+% Some ROIs (used in other analyses) are not created in this script.
+% An alternative defintion of Amygdala (slightly more extensive), taken
+% from the Harvard - Oxford atlas, is created by the script in
+% utils/create_roi_masks.py.
 
 my_config = ini2struct('../../../config.ini');
 
