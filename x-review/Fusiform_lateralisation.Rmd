@@ -1,0 +1,154 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.13.7
+  kernelspec:
+    display_name: R 4.0
+    language: R
+    name: ir40
+---
+
+```{r tags=c()}
+library('ini')
+library('tidyverse')
+library('BayesFactor')
+library('ggpubr')
+```
+
+## Introduction
+Following the comment from the Reviewer:
+> For TPJ and pSTS, a lateralized mask was used due to known asymmetries on the functional level. I wonder why the authors did not do the same for the FFA given its lateralization in the perception of faces in the left visual field / right hemisphere (e.g. Yovel et al. 2008).
+> Yovel, G., Tambini, A., & Brandman, T. (2008). The asymmetry of the fusiform face area is a stable individual characteristic that underlies the left-visual-field superiority for faces. Neuropsychologia, 46(13), 3061-3068.
+
+I would agree that there is reasonable basis to treat the FFA in a manner analogous to TPJ and pSTS, and use rFFA in the analysis (due to the reported right-hemispheric dominance). In this report I will assess the impact of FFA ROI laterality on the observed results and provide updated statistics.
+
+
+## Method
+
+
+I limited the current analysis to the OFL (US/noUS), because that's when participants actually process faces (also, bilateral FFA activations are pretty much zero during DE, but we report them in the paper for completeness).
+
+Mecause I don't have an easy access to Matlab any more, I used a Python script (not yet on GitHub) to extract beta parameters for each subject and each condition (US, noUS) from right, left, and bilateral FFAs:
+
+```{r}
+config <- read.ini("config.ini")
+df <- read_csv(file.path(config$extras$roi_output, 'ffa_betas.csv'), col_types=cols())
+```
+
+```{r}
+head(df)
+```
+
+I'm converting the data frame to a tidy representation (1 row per observation):
+
+```{r}
+tidy_df <- df %>% 
+    mutate(group = as.factor(group)) %>%
+    pivot_longer(cols = where(is.numeric), names_to=c('side', 'condition'), names_sep='_',
+                 values_to='contrast_estimate')
+```
+
+```{r}
+head(tidy_df)
+```
+
+## Results
+
+
+### Visual comparison (left vs right vs both)
+
+
+Each subplot shows bars for left, right, and both FFAs; separatly for conditions (noUS / US, columns) and groups (friend / stranger, rows):
+
+```{r}
+tidy_df %>% ggbarplot(
+    x = "side", y = "contrast_estimate", facet.by=c('group', 'condition'), add = c("mean_ci", "jitter"))
+```
+
+The same can be shown for US > noUS (calculated by subtracting the averaged parameters -- it would be more correct to rely on voxelwise subtraction ie. taking the relevant SPM beta file, but I'm approximating).
+
+```{r}
+tidy_df %>%
+    pivot_wider(names_from=condition, values_from=contrast_estimate) %>%  # creates (us, no) columns, replacing condition and contrast estimate
+    mutate(ur = us - no) %>%
+    ggbarplot(x = "side", y = "ur", facet.by = "group", add = c("mean_ci", "jitter"))
+```
+
+### Numeric comparison: left vs right
+
+
+From the two figures above it seems that we might have some laterality (R > L, as predicted) going on for stranger US. However, error bars suggest it's unlikely to be statistically significant:
+
+```{r}
+tidy_df %>% 
+    filter(group=="stranger" & condition=="us" & side %in% c("left", "right")) %>%
+    t.test(contrast_estimate ~ side, .)
+```
+
+```{r}
+tidy_df %>% filter(group=="stranger" & condition=="us" & side %in% c("left", "right")) %>%
+    ttestBF(formula = contrast_estimate ~ side, data = .) %>%
+    (function(x) 1/x )(.)
+```
+
+Indeed, the right > left comparison (for stranger US) is not statistically significant (p > 0.05) though Bayes Factor indicates inconclusive evidence.
+
+
+### Between-group comparison, bilateral FFA
+
+
+In the paper we report t = 0.03, p=.98, BF=4.04 for the bilateral FFA. Let's confirm that we can replicate this for the current data frame (i.e. sanity check)
+
+```{r}
+frm = contrast_estimate ~ group
+inv <- function(x) {1/x}
+```
+
+```{r}
+tidy_df %>% head()
+```
+
+```{r}
+tidy_df %>%
+    filter(side=="both", condition=="us") %>%
+    t.test(frm, .)
+```
+
+```{r}
+tidy_df %>%
+    filter(side=="both", condition=="us") %>%
+    ttestBF(formula = frm, data = .) %>%
+    inv()
+```
+
+### Between-group comparison, right FFA
+
+```{r}
+tidy_df %>%
+    filter(side=="right", condition=="us") %>%
+    t.test(frm, .)
+```
+
+```{r}
+tidy_df %>%
+    filter(side=="right", condition=="us") %>%
+    ttestBF(formula = frm, data = .) %>%
+    inv()
+```
+
+## Conclusion
+
+
+- No significant (and arguably no meaningful) difference between R and L FFA
+- For US (F>S), bilateral ROI, we reported t = 0.03, p = 0.98, BF = 4.04
+- For US (F>S), right ROI, we would report t = -0.57, p = 0.57, BF = 3.52
+- Our confidence in the null result decreases, but we still have moderate evidence of lack of effect.
+- Suggest using rFFA and amending the results accordingly
+
+```{r}
+
+```

@@ -1,0 +1,4 @@
+[extras]
+osf_data = /home/mszczepanik/Data/emocon/
+roi_input = /home/mszczepanik/Data/fusiform/input
+roi_output = /home/mszczepanik/Data/fusiform/output
