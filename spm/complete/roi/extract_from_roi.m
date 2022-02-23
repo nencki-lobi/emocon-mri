@@ -45,7 +45,7 @@ for n = 1:length(inputs)
         fullfile(roi_dir, "seed_rpSTS_vox200.nii"));
     stats.FFA = summarise(...
         stats.label, fl_dir, inputs(n).task, inputs(n).con, ...
-        fullfile(roi_dir, "merged_seed_FFA_vox200.nii"));
+        fullfile(roi_dir, "seed_rFFA_vox200.nii"));
 
     tbl_name = "roi_stats_" + inputs(n).task + inputs(n).suffix + ".csv";
     writetable(stats, fullfile(tbl_dir, tbl_name))

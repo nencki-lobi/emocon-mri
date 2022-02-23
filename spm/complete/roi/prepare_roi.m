@@ -13,15 +13,14 @@
 %   left AI:    https://identifiers.org/neurovault.image:45309
 %   right AI:   https://identifiers.org/neurovault.image:45325
 %   aMCC:       https://identifiers.org/neurovault.image:45306
-%   left  FFA:  https://identifiers.org/neurovault.image:45311
 %   right FFA:  https://identifiers.org/neurovault.image:45327
 %   right pSTS: https://identifiers.org/neurovault.image:45337
 %   right TPJ:  https://identifiers.org/neurovault.image:45335
 %   left amy:   https://identifiers.org/neurovault.image:45320
 %   right amy:  https://identifiers.org/neurovault.image:45336
 %
-% The seeds for AI, amygdala and fusiform are combined to form a single
-% ROI per structure (bilateral) using spm_imcalc.
+% The seeds for AI and amygdala are combined to form a single ROI
+% per structure (bilateral) using spm_imcalc.
 %
 % Some ROIs (used in other analyses) are not created in this script. An
 % alternative definition of AI (more extensive, used for PPI) was obtained
@@ -43,7 +42,6 @@ file_names = [
     "seed_lAI_vox200.nii";
     "seed_rAI_vox200.nii";
     "seed_aMCC_vox200.nii";
-    "seed_lFFA_vox200.nii";
     "seed_rFFA_vox200.nii";
     "seed_rpSTS_vox200.nii";
     "seed_rTPJ_vox200.nii";
@@ -69,18 +67,6 @@ if ~ isfile(merged_ai)
         fullfile(roi_dir, 'seed_rAI_vox200.nii');
         ];
     vo = spm_imcalc(vi, merged_ai, 'i1 + i2');
-end
-
-% Merge left & right FFA using imcalc
-
-merged_ffa = fullfile(roi_dir, 'merged_seed_FFA_vox200.nii');
-
-if ~ isfile(merged_ffa)
-    vi = [
-        fullfile(roi_dir, 'seed_lFFA_vox200.nii');
-        fullfile(roi_dir, 'seed_rFFA_vox200.nii');
-        ];
-    vo = spm_imcalc(vi, merged_ffa, 'i1 + i2');
 end
 
 % Merge the amygdalae using imcalc
