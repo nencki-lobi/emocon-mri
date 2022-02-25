@@ -37,6 +37,7 @@ library('tidyverse')
 library('BayesFactor')
 library('ggpubr')
 library('ini')
+library('measurements')  # unit conversion with conv_unit
 ```
 
 ## Data import
