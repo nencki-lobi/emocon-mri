@@ -65,7 +65,7 @@ if(!dir.exists("figures")) {
 
 Set the target ppi for saving
 ```{r}
-target_ppi = 300
+target_ppi = 500
 ```
 
 ## OFL - figure
@@ -77,9 +77,15 @@ ofl_plot <- ofl %>%
     mutate(group = as.factor(group)) %>%
     rename(Amy = amygdala) %>%
     pivot_longer(cols = where(is.numeric), names_to = "roi", values_to = "contrast estimate") %>%
-    ggbarplot(x = "group", y = "contrast estimate", facet.by = "roi", add = "mean_ci",
-              color = "group", palette = c("#D55E00", "#0072B2"),
+    ggbarplot(x = "group", y = "contrast estimate", facet.by = "roi", add = c("mean_ci", "jitter"),
+              color = "group", palette = c("#D55E00", "#0072B2"), add.params = list(size = .8, alpha = .35),
               nrow = 1, xlab = FALSE, legend.title = "")
+
+    #ggboxplot(x = "group", y = "contrast estimate", facet.by = "roi", add = "jitter", width = 0.7,
+    #          add.params = list(size = .8, alpha = .35),
+    #          color = "group", palette = c("#D55E00", "#0072B2"), #dotsize = 0.8, alpha = 0.35,
+    #          nrow = 1, xlab = FALSE, legend.title = "")
+    #ggadd("boxplot", alpha = 0, width = 0.3) # this way, boxplot's on top
     
 ofl_plot <- ofl_plot %>%
     ggpar(
@@ -97,7 +103,9 @@ Save the plot in a size that would fit nicely with the brains.
 ```{r}
 ggexport(
     ofl_plot,
-    filename = "figures/roi_ofl.png",
+    filename = "figures/roi_ofl_2.png",
+    #width = conv_unit(120, "mm", "inch") * target_ppi,
+    #height = conv_unit(60, "mm", "inch") * target_ppi,
     width = conv_unit(120, "mm", "inch") * target_ppi,
     height = conv_unit(42, "mm", "inch") * target_ppi,
     res = target_ppi,
@@ -115,9 +123,14 @@ de_plot <- de %>%
     mutate(group = as.factor(group)) %>%
     rename(Amy = amygdala) %>%
     pivot_longer(cols = where(is.numeric), names_to = "roi", values_to = "contrast estimate") %>%
-    ggbarplot(x = "group", y = "contrast estimate", facet.by = "roi", add = "mean_ci",
-              color = "group", palette = c("#D55E00", "#0072B2"),
+    ggbarplot(x = "group", y = "contrast estimate", facet.by = "roi", add = c("mean_ci", "jitter"),
+              color = "group", palette = c("#D55E00", "#0072B2"), add.params = list(size = .8, alpha = .35),
               nrow = 1, xlab = FALSE, legend = "top", legend.title = "")
+  
+    #ggboxplot(x = "group", y = "contrast estimate", facet.by = "roi", add = "jitter", width = 0.7,
+    #          add.params = list(size = .8, alpha = .35),
+    #          color = "group", palette = c("#D55E00", "#0072B2"),
+    #          nrow = 1, xlab = FALSE, legend = "top", legend.title = "")
 
 de_plot <- de_plot %>%
     ggpar(
@@ -135,9 +148,9 @@ Save the plot in a size that would nicely fit the brains.
 ```{r}
 ggexport(
     de_plot,
-    filename = "figures/roi_de.png",
+    filename = "figures/roi_de_2.png",
     width = conv_unit(120, "mm", "inch") * target_ppi,
-    height = conv_unit(42, "mm", "inch") * target_ppi,
+    height = conv_unit(60, "mm", "inch") * target_ppi,
     res = target_ppi,
     pointsize = 8
     )
@@ -194,8 +207,16 @@ ofl_bonus_plot <- ofl_both %>%
         contrast = str_replace_all(contrast, c("no" = "no ", "us" = "US")),
         thing = str_c(group, " ", contrast)
     ) %>%
-    ggbarplot(x = "thing", y = "contrast estimate", facet.by = "roi", add = c("mean_ci", "jitter"),
-              add.params = list(size = .8, alpha = .3),
+    #ggbarplot(x = "thing", y = "contrast estimate", facet.by = "roi", add = c("mean_ci", "jitter"),
+    #          add.params = list(size = .8, alpha = .3),
+    #          order = c("friend US", "friend no US", "stranger US", "stranger no US"),
+    #          color = "thing", palette = c("#D55E00", "#E69F00", "#0072B2", "#56B4E9"),
+    #          xlab = FALSE, legend.title = "") +
+    #rremove("x.text") + rremove("x.ticks")
+
+
+    ggboxplot(x = "thing", y = "contrast estimate", facet.by = "roi", add = "jitter", width = 0.7,
+              add.params = list(size = .8, alpha = .35),
               order = c("friend US", "friend no US", "stranger US", "stranger no US"),
               color = "thing", palette = c("#D55E00", "#E69F00", "#0072B2", "#56B4E9"),
               xlab = FALSE, legend.title = "") +
@@ -207,7 +228,7 @@ ofl_bonus_plot
 ```{r}
 ggexport(
     ofl_bonus_plot,
-    filename = "figures/roi_ofl-sticks_alt.png",
+    filename = "figures/roi_ofl-sticks_alt_boxplot.png",
     width = 5 * target_ppi,  # bit wider to fit all legends
     height = 3.5 * target_ppi,
     res = target_ppi,
