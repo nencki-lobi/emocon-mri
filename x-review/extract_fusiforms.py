@@ -57,6 +57,7 @@ bl_masker = NiftiMasker(mask_img = bilateral_mask)
 subdir_list = [p for p in ofl_dir.iterdir() if p.is_dir()]
 us_paths = [d / 'con_0003.nii' for d in subdir_list]
 no_paths = [d / 'con_0004.nii' for d in subdir_list]
+vs_paths = [d / 'con_0005.nii' for d in subdir_list]
 labels = [d.name for d in subdir_list]
 
 # put these in a data frame
@@ -64,6 +65,7 @@ df = pd.DataFrame(
     {'label': labels,
      'us_path': us_paths,
      'no_path': no_paths,
+     'vs_path': vs_paths,
      }
 ).astype(str)
 
@@ -82,8 +84,13 @@ df['left_no'] = extract_betas(df.no_path, lFFA_masker)
 df['right_no'] = extract_betas(df.no_path, rFFA_masker)
 df['both_no'] = extract_betas(df.no_path, bl_masker)
 
+# extract and keep US vs noUS betas
+df['left_vs'] = extract_betas(df.vs_path, lFFA_masker)
+df['right_vs'] = extract_betas(df.vs_path, rFFA_masker)
+df['both_vs'] = extract_betas(df.vs_path, bl_masker)
+
 # drop paths from the table
-df.drop(columns=['us_path', 'no_path'], inplace=True)
+df.drop(columns=['us_path', 'no_path', 'vs_path'], inplace=True)
 
 # write out the table
 if not roi_output.exists():

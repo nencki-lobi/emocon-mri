@@ -8,8 +8,8 @@ ppi_dir = fullfile(my_config.spm.root, "complete", "ppi");
 sl_dir  = fullfile(my_config.spm.root, "complete", "ppi_group");
 
 % the only analysis-specific variables
-ppi_name = "PPI_ofl_FFAxUS";  % used for folder names
-ctr_name = "FFA x US";        % used for contrast manager
+ppi_name = "PPI_ofl_rFFAxUS";  % used for folder names
+ctr_name = "rFFA x US";        % used for contrast manager
 
 % load subject table
 subject_table = readtable(...
