@@ -291,10 +291,11 @@ boxplot_ofl <- ws_avg_ofl%>%
     thing = str_c(group, " ", stimulus)
   ) %>%
   ggboxplot (x = "thing", y = "m_amplitude", order = c("friend US", "friend no US", "stranger US", "stranger no US"),
-             color = "thing", palette = c("#D55E00", "#E69F00", "#0072B2", "#56B4E9"), legend = c(0.75,0.9),
-             xlab = FALSE, legend.title = "") +
+             width = 0.7, color = "thing", palette = c("#D55E00", "#E69F00", "#0072B2", "#56B4E9"), outlier.shape = NA,
+             legend = c(0.75,0.9), xlab = FALSE, legend.title = "") +
   labs(y = "amplitude (arb. unit)") +
-  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) + 
+  geom_jitter(width = 0.2, height = 0, size = 0.8, alpha = .35, inherit.aes = TRUE, aes(colour = thing))
 
 if(!dir.exists("figures")) {
   dir.create("figures")
@@ -310,10 +311,11 @@ boxplot_de <- ws_avg_de%>%
     thing = str_c(group, " ", stimulus)
   ) %>%
   ggboxplot (x = "thing", y = "m_amplitude", order = c("friend CS+", "friend CS-", "stranger CS+", "stranger CS-"),
-             color = "thing", palette = c("#D55E00", "#E69F00", "#0072B2", "#56B4E9"), legend = c(0.3,0.9),
-             xlab = FALSE, legend.title = "") +
+             width = 0.7, color = "thing", palette = c("#D55E00", "#E69F00", "#0072B2", "#56B4E9"), legend = c(0.3,0.9),
+             outlier.shape = NA, xlab = FALSE, legend.title = "") +
   labs(y = "amplitude (arb. unit)") +
-  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank())
+  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
+  geom_jitter(width = 0.2, height = 0, size = 0.8, alpha = .35, inherit.aes = TRUE, aes(colour = thing))
 
 if(!dir.exists("figures")) {
   dir.create("figures")
@@ -326,7 +328,7 @@ target_ppi = 300
 scr_boxplot_4colors <- ggarrange(boxplot_ofl, boxplot_de, labels = "AUTO")
 ggexport(
     scr_boxplot_4colors,
-    filename = file.path(fig_dir, "scr_boxplot_4colors_anova.png"),
+    filename = file.path(fig_dir, "scr_barplot_4colors_anova.tiff"),
     width = 7.5 * target_ppi,
     height =  5 * target_ppi,
     res = target_ppi,

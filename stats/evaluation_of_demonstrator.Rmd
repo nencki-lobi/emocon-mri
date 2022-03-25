@@ -81,22 +81,23 @@ ed_plot <- df_ca %>%
         )
     ) %>%
     ggdotplot(x = "group", y = "value", facet.by = "name", color = "group", fill = "group",
-              dotsize = 0.5, alpha = 0.6, nrow = 1, ncolumn = 5, font.label = 1) %>%
+              dotsize = 0.4, alpha = 0.35, nrow = 1, ncolumn = 5, font.label = 1) %>%
     ggadd("boxplot", alpha = 0) %>%            # this way, boxplot's on top
     ggpar(yticks.by = 1, font.ytickslab = 8, palette = c("#D55E00", "#0072B2")) %>%
     + rremove("x.text") + rremove("x.ticks") + rremove("xlab") + theme(strip.text.x = element_text(size = 8))
+
 
 if(!dir.exists("figures")) {
     dir.create("figures")
 }
 
-target_ppi = 300
+target_ppi = 500
 
 ggexport(
     ed_plot,
-    filename = "figures/evaluation_of_demonstrator.png",
-    width = 5 * target_ppi,
-    height = 3.5 * target_ppi,
+    filename = "figures/evaluation_of_demonstrator_dotplot.tiff",
+    width = 5.51 * target_ppi,
+    height = 3.86 * target_ppi,
     res = target_ppi,
     pointsize = 8
 )

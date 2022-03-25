@@ -18,10 +18,10 @@ inputs = cell(8, nrun);
 
 % subject - independent variables
 task = "ofl";
-voi_name = 'FFA';
-voi_image = cellstr(fullfile(roi_dir, 'merged_seed_FFA_vox200.nii'));
+voi_name = 'rFFA';
+voi_image = cellstr(fullfile(roi_dir, 'seed_rFFA_vox200.nii'));
 weights = [3 1 1; 4 1 -1];  % US (1), noUS (-1)
-ppi_name = 'FFAxUS';
+ppi_name = 'rFFAxUS';
 
 
 for crun = 1:nrun

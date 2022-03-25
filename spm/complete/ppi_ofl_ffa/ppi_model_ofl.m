@@ -12,11 +12,11 @@ ppi_dir = fullfile(my_config.spm.root, "complete", "ppi");
 
 % analysis-specific variables
 task = "ofl";                       % task name
-ppi_file = "PPI_FFAxUS.mat";       % name of PPI file
-ppi_name = "PPI_ofl_FFAxUS";       % name of output folder
+ppi_file = "PPI_rFFAxUS.mat";       % name of PPI file
+ppi_name = "PPI_ofl_rFFAxUS";       % name of output folder
 psych_name = "US - noUS";           % name for PPI.P regressor
-physio_name = "FFA BOLD";          % name for the PPI.Y regressor
-ctr_name = "FFA PPI Interaction";  % name for the [1 0 0] contrast
+physio_name = "rFFA BOLD";          % name for the PPI.Y regressor
+ctr_name = "rFFA PPI Interaction";  % name for the [1 0 0] contrast
 
 % patterns for BIDS-derivatives file names
 pat_smoothed = ...
