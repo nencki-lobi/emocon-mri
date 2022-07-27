@@ -35,7 +35,7 @@ config <- read.ini("config.ini")
 The statistical analysis relies on the outputs of Python processing:
 
 ```{r}
-input_file <- file.path(config$extras$multivariate_output, 'pattern_expression.csv')
+input_file <- file.path(config$multivariate$mv_output, 'pattern_expression.csv')
 pattern_expression  <- read_csv(input_file, col_types=cols())
 ```
 

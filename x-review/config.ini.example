@@ -2,5 +2,7 @@
 osf_data = /home/mszczepanik/Data/emocon/
 roi_input = /home/mszczepanik/Data/fusiform/input
 roi_output = /home/mszczepanik/Data/fusiform/output
+[multivariate]
 signature_of_pain = /home/mszczepanik/Documents/signature_of/pain
-multivariate_output = /home/mszczepanik/Documents/signature_of/outputs
+signature_of_fear = /home/mszczepanik/Documents/signature_of/fear
+mv_output = /home/mszczepanik/Documents/signature_of/outputs

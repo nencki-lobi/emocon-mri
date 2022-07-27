@@ -16,9 +16,9 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 
 osf_data = Path(config['extras']['osf_data'])  # /home/mszczepanik/data/emocon
-pain_dir = Path(config['extras']['signature_of_pain'])
-fear_dir = Path(config['extras']['signature_of_fear'])
-out_dir = Path(config['extras']['multivariate_output'])
+pain_dir = Path(config['multivariate']['signature_of_pain'])
+fear_dir = Path(config['multivariate']['signature_of_fear'])
+out_dir = Path(config['multivariate']['mv_output'])
 
 # make a list of images to analyse
 ofl_dir = osf_data / 'fMRI' / '1st_level' / 'observational fear learning/'
