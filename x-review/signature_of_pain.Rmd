@@ -1,0 +1,78 @@
+---
+title: Signature of pain
+output:
+  html_document:
+    theme: spacelab
+---
+
+This analysis compares the multivariate expression of "signature of
+vicarious pain" from
+[Zhou et al 2020](https://doi.org/10.7554/eLife.56929)
+between friend and stranger groups in observational fear learning.
+
+The "signature expression" is defined as a dot product of Zhou et al's
+published statistical map, and a given subject's contrast estimate
+(SPM's con file) corresponding to US > noUS; see the
+`signature_of_pain.py` script for implementation details.
+
+```{r, message=FALSE}
+library('ini')
+library('tidyverse')
+library('BayesFactor')
+library('ggpubr')
+```
+
+## Inputs
+
+Read paths from configuration:
+
+```{r}
+config <- read.ini("config.ini")
+```
+
+The statistical analysis relies on the outputs of Python processing:
+
+```{r}
+input_file <- file.path(config$extras$multivariate_output, 'pattern_expression.csv')
+pattern_expression  <- read_csv(input_file, col_types=cols())
+```
+
+Group assignment can be read from the participant information table:
+
+```{r}
+subject_info_file <- file.path(config$extras$osf_data, "Behavioral", "table.tsv")
+groups <- read_tsv(subject_info_file, col_types=cols()) %>%
+    filter(role=="OBS") %>%
+    select(c("label", "group"))
+```
+
+Assembling into one tibble for analysis:
+
+```{r}
+df <- left_join(pattern_expression, groups, by="label") %>%
+    relocate("group", .after="label")
+head(df)
+```
+
+## Statistics
+
+```{r}
+ggboxplot(
+    data=df,
+    x="group",
+    y="dot_pain",
+    add="jitter",
+    )
+```
+
+Frequentist t-test:
+
+```{r}
+t.test(dot_pain ~ group, df)
+```
+
+Bayesian t-test:
+
+```{r}
+ttestBF(formula = dot_pain ~ group,data = df)
+```
