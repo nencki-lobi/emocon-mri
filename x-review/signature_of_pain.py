@@ -29,7 +29,7 @@ labels = [d.name for d in subdir_list]
 example_result = image.load_img(spm_paths[0])
 
 # load the signature of pain
-pain_un = image.load_img(str(pain_dir / 'NS_vicarious_pain_pattern_unthresholded.nii'))
+pain_un = image.load_img(str(pain_dir / 'General_vicarious_pain_pattern_unthresholded.nii'))
 
 # resample the signature image to our result space
 pain_un_r = image.resample_to_img(pain_un, example_result, interpolation='nearest')
