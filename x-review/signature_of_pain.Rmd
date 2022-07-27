@@ -5,9 +5,11 @@ output:
     theme: spacelab
 ---
 
-This analysis compares the multivariate expression of "signature of
-vicarious pain" from
+This analysis compares the multivariate expression of
+"general vicarious pain pattern" from
 [Zhou et al 2020](https://doi.org/10.7554/eLife.56929)
+and "visually induced fear signature" from
+[Zhou et al 2021](https://doi.org/10.1101/2020.11.23.394973)
 between friend and stranger groups in observational fear learning.
 
 The "signature expression" is defined as a dot product of Zhou et al's
@@ -57,13 +59,21 @@ head(df)
 ## Statistics
 
 ```{r}
-ggboxplot(
-    data=df,
-    x="group",
-    y="dot_pain",
-    add="jitter",
+df %>%
+    pivot_longer(
+        cols=starts_with("dot_"),
+        names_to="signature",
+        values_to="expression") %>%
+    mutate(signature = fct_relevel(signature, "dot_pain", "dot_fear")) %>%
+    ggboxplot(
+        x="group",
+        y="expression",
+        facet.by="signature",
+        add="jitter",
     )
 ```
+
+### Pain
 
 Frequentist t-test:
 
@@ -74,5 +84,19 @@ t.test(dot_pain ~ group, df)
 Bayesian t-test:
 
 ```{r}
-ttestBF(formula = dot_pain ~ group,data = df)
+ttestBF(formula = dot_pain ~ group, data = df)
+```
+
+### Fear
+
+Frequentist t-test:
+
+```{r}
+t.test(dot_fear ~ group, df)
+```
+
+Bayesian t-test:
+
+```{r}
+ttestBF(formula = dot_fear ~ group, data = df)
 ```
