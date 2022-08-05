@@ -59,18 +59,39 @@ head(df)
 ## Statistics
 
 ```{r}
-df %>%
+expression_plot <- df %>%
     pivot_longer(
         cols=starts_with("dot_"),
         names_to="signature",
         values_to="expression") %>%
-    mutate(signature = fct_relevel(signature, "dot_pain", "dot_fear")) %>%
+    mutate(
+        group = fct_relevel(group, "friend", "stranger"),
+        signature = fct_recode(
+            fct_relevel(signature, "dot_pain", "dot_fear"),
+            pain = "dot_pain",
+            fear = "dot_fear")) %>%
     ggboxplot(
         x="group",
         y="expression",
         facet.by="signature",
         add="jitter",
+        add.params = list(size = 0.75),
+        ylab = "pattern expression",
     )
+
+print(expression_plot)
+```
+
+```{r}
+target_ppi <- 500
+ggexport(
+    expression_plot,
+    filename=file.path(config$multivariate$mv_output, "pattern_expression.png"),
+    width = 4 * target_ppi,
+    height = 3 * target_ppi,
+    res = target_ppi,
+    pointsize = 8
+)
 ```
 
 ### Pain
